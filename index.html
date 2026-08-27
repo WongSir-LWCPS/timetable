@@ -1,392 +1,964 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樂華天主教小學 - 時間表查詢系統</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .active-tab {
-            background-color: #2563eb;
-            color: white;
-        }
-        .calendar-cell {
-            min-height: 100px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>樂華天主教小學 - 教師個人時間表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-900:#0c1526;
+  --navy-800:#101c33;
+  --navy-700:#16233e;
+  --blue-600:#3457d5;
+  --blue-500:#4a6bea;
+  --blue-100:#e7ecfc;
+  --amber-500:#e5922e;
+  --amber-100:#fbe9d3;
+  --red-500:#e0524a;
+  --red-100:#fbdedc;
+  --violet-500:#8b5fc9;
+  --violet-100:#ece3f8;
+  --grey-400:#94a3b8;
+  --grey-100:#eef1f6;
+  --bg:#f3f5fa;
+  --card:#ffffff;
+  --border:#e3e7f0;
+  --text:#1b2436;
+  --text-muted:#667085;
+  --today-ring:#3457d5;
+  --radius:12px;
+  --font-cjk:'Noto Sans TC', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  --font-num:'Inter', var(--font-cjk);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--font-cjk);
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+button{font-family:inherit; cursor:pointer;}
+
+/* ---------- App shell ---------- */
+.app{
+  max-width:1400px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ---------- Top bar (school name + teacher select) ---------- */
+.topbar{
+  background:var(--navy-900);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.school-name{
+  color:#fff;
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:.5px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.school-name .sub{
+  color:#8fa0c9;
+  font-weight:500;
+  font-size:12.5px;
+}
+.teacher-select-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.teacher-select-wrap label{
+  color:#8fa0c9;
+  font-size:12.5px;
+  font-weight:500;
+  white-space:nowrap;
+}
+select#teacherSelect{
+  appearance:none;
+  -webkit-appearance:none;
+  background:var(--navy-700) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%238fa0c9"/></svg>') no-repeat right 12px center;
+  color:#fff;
+  border:1px solid #263457;
+  border-radius:8px;
+  padding:8px 32px 8px 14px;
+  font-size:14px;
+  font-weight:600;
+  font-family:inherit;
+  min-width:150px;
+}
+select#teacherSelect:focus{outline:2px solid var(--blue-500); outline-offset:1px;}
+
+/* ---------- Header / calendar controls ---------- */
+.calheader{
+  background:var(--navy-800);
+  color:#fff;
+  padding:16px 20px 0 20px;
+}
+.calheader-title{
+  text-align:center;
+  font-family:var(--font-num);
+  font-weight:800;
+  font-size:22px;
+  letter-spacing:.5px;
+  padding-bottom:12px;
+}
+.calheader-title .weekbadge{
+  display:inline-block;
+  margin-left:10px;
+  font-size:12px;
+  font-weight:600;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);
+  padding:3px 10px;
+  border-radius:20px;
+  vertical-align:middle;
+  color:#c8d3ee;
+  letter-spacing:0;
+}
+.calheader-controls{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-bottom:14px;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.nav-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  position:relative;
+}
+.icon-btn{
+  background:var(--navy-700);
+  border:1px solid #263457;
+  color:#e7ecfc;
+  width:36px;
+  height:36px;
+  border-radius:9px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .15s;
+}
+.icon-btn:hover{background:#1c2a4a;}
+.icon-btn:active{transform:translateY(1px);}
+.today-btn{
+  background:var(--navy-700);
+  border:1px solid #263457;
+  color:#fff;
+  height:36px;
+  padding:0 16px;
+  border-radius:9px;
+  font-weight:600;
+  font-size:13.5px;
+}
+.today-btn:hover{background:#1c2a4a;}
+.view-toggle{
+  display:flex;
+  background:var(--navy-700);
+  border:1px solid #263457;
+  border-radius:9px;
+  overflow:hidden;
+}
+.view-toggle button{
+  border:none;
+  background:transparent;
+  color:#9fb0d6;
+  font-weight:700;
+  font-size:13.5px;
+  padding:8px 18px;
+  transition:background .15s,color .15s;
+}
+.view-toggle button.active{
+  background:var(--blue-600);
+  color:#fff;
+}
+
+/* Calendar popover */
+.calendar-pop{
+  position:absolute;
+  top:44px;
+  left:0;
+  z-index:50;
+  background:#fff;
+  color:var(--text);
+  border-radius:var(--radius);
+  box-shadow:0 12px 32px rgba(10,20,50,.28);
+  width:300px;
+  padding:14px;
+  display:none;
+}
+.calendar-pop.open{display:block;}
+.calendar-pop-tabs{
+  display:flex;
+  background:var(--grey-100);
+  border-radius:8px;
+  padding:3px;
+  margin-bottom:12px;
+}
+.calendar-pop-tabs button{
+  flex:1;
+  border:none;
+  background:transparent;
+  padding:7px 0;
+  font-size:12.5px;
+  font-weight:700;
+  border-radius:6px;
+  color:var(--text-muted);
+}
+.calendar-pop-tabs button.active{
+  background:#fff;
+  color:var(--blue-600);
+  box-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+.cp-panel{display:none;}
+.cp-panel.active{display:block;}
+.cp-month-nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+.cp-month-nav .label{font-weight:700; font-size:14px;}
+.cp-month-nav button{
+  background:var(--grey-100);
+  border:none;
+  width:26px;height:26px;
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text);
+}
+.cp-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:3px;
+  text-align:center;
+}
+.cp-grid .dow{
+  font-size:11px;
+  color:var(--text-muted);
+  font-weight:700;
+  padding-bottom:4px;
+}
+.cp-day{
+  font-size:12.5px;
+  padding:6px 0;
+  border-radius:6px;
+  font-family:var(--font-num);
+  color:var(--text);
+  background:transparent;
+  border:none;
+}
+.cp-day.out{color:#c8cedb;}
+.cp-day.weekend{color:#c8cedb; cursor:default;}
+.cp-day.school:hover{background:var(--blue-100); cursor:pointer;}
+.cp-day.today{box-shadow:inset 0 0 0 1.5px var(--blue-600); font-weight:800;}
+.cp-day.selected{background:var(--blue-600); color:#fff; font-weight:800;}
+.cp-day.disabled{cursor:default; color:#dde1ea;}
+.week-list{max-height:280px; overflow-y:auto;}
+.week-item{
+  width:100%;
+  text-align:left;
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:8px;
+  padding:8px 10px;
+  margin-bottom:6px;
+  font-size:12.5px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.week-item:hover{border-color:var(--blue-500); background:var(--blue-100);}
+.week-item b{font-family:var(--font-num); color:var(--blue-600); font-size:13px;}
+.week-item .range{color:var(--text-muted); font-size:11.5px; font-family:var(--font-num);}
+
+/* ---------- Legend ---------- */
+.legend{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  padding:10px 20px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  font-size:11.5px;
+  color:var(--text-muted);
+}
+.legend .dot{display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:5px; vertical-align:middle;}
+
+/* ---------- Grid ---------- */
+.grid-wrap{
+  flex:1;
+  overflow-x:auto;
+  background:var(--card);
+  padding:0 0 24px 0;
+}
+table.tt{
+  border-collapse:separate;
+  border-spacing:0;
+  width:100%;
+  table-layout:fixed;
+  min-width:640px;
+}
+table.tt th, table.tt td{
+  border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);
+}
+table.tt th:first-child, table.tt td:first-child{border-left:1px solid var(--border);}
+
+.col-label{width:110px;}
+body.day-view table.tt{min-width:0;}
+body.day-view table.tt .col-label{width:96px;}
+body.day-view th.daycol{min-width:0;}
+
+th.corner{
+  background:var(--grey-100);
+  color:var(--text-muted);
+  font-size:12px;
+  font-weight:700;
+  padding:10px 8px;
+  border-top:1px solid var(--border);
+  position:sticky; left:0; z-index:3;
+}
+th.daycol{
+  background:var(--blue-600);
+  color:#fff;
+  padding:10px 6px 12px;
+  text-align:center;
+  border-top:1px solid var(--border);
+  min-width:120px;
+}
+th.daycol .wd{font-size:12.5px; font-weight:600; opacity:.92;}
+th.daycol .dnum{font-family:var(--font-num); font-size:22px; font-weight:800; line-height:1.25; margin:1px 0 4px;}
+th.daycol.is-today{background:var(--amber-500);}
+.badge{
+  display:inline-block;
+  font-size:11px;
+  font-weight:700;
+  padding:2.5px 9px;
+  border-radius:20px;
+  background:rgba(255,255,255,.16);
+  color:#fff;
+}
+.badge.unset{background:rgba(255,255,255,.14); color:#e2e8f5;}
+.badge.special-S{background:var(--amber-100); color:#8a5216;}
+.badge.special-E{background:var(--red-100); color:#9c332c;}
+.badge.special-TD{background:var(--violet-100); color:#5b3a8f;}
+
+td.period-label{
+  background:var(--grey-100);
+  padding:9px 10px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--text);
+  vertical-align:middle;
+  position:sticky; left:0; z-index:2;
+  line-height:1.5;
+}
+td.period-label .time{display:block; font-size:11px; font-weight:500; color:var(--text-muted); font-family:var(--font-num);}
+
+tr.fixed-row td.cell{
+  background:repeating-linear-gradient(135deg, #eef1f8, #eef1f8 6px, #e5e9f3 6px, #e5e9f3 12px);
+}
+tr.fixed-row td.period-label{background:var(--grey-100);}
+
+td.cell{
+  padding:8px 8px;
+  vertical-align:middle;
+  text-align:center;
+  font-size:12.5px;
+  height:52px;
+  color:var(--text);
+}
+td.cell.is-today{background:#fff8ec;}
+tr.fixed-row td.cell.is-today{background:repeating-linear-gradient(135deg, #fff2d8, #fff2d8 6px, #ffe9bd 6px, #ffe9bd 12px);}
+td.cell .subj{font-weight:700; display:block; margin-bottom:2px;}
+td.cell .loc{display:block; font-size:11px; color:var(--text-muted);}
+td.cell .fixed-main{font-weight:700; display:block;}
+td.cell .fixed-sub{display:block; font-size:11px; color:var(--text-muted); margin-top:2px;}
+td.cell.empty{color:#d7dbe6;}
+td.cell.empty::before{content:"—";}
+td.cell.merged{font-weight:700; color:var(--text); background:none !important; letter-spacing:.5px;}
+
+.daybanner{
+  margin:16px 20px 0;
+  padding:14px 16px;
+  border-radius:var(--radius);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:13.5px;
+}
+.daybanner.special-S{background:var(--amber-100); color:#8a5216;}
+.daybanner.special-E{background:var(--red-100); color:#9c332c;}
+.daybanner.special-TD{background:var(--violet-100); color:#5b3a8f;}
+.daybanner.unset{background:var(--grey-100); color:var(--text-muted);}
+.daybanner.weekend{background:var(--grey-100); color:var(--text-muted);}
+.daybanner b{font-weight:800;}
+
+.day-single-head{
+  text-align:center;
+  padding:18px 20px 4px;
+}
+.day-single-head .dow{font-size:14px; color:var(--text-muted); font-weight:600;}
+.day-single-head .dnum{font-family:var(--font-num); font-size:34px; font-weight:800; margin:2px 0;}
+.day-single-head .badge{margin-top:2px;}
+
+@media (max-width:768px){
+  .topbar{padding:12px 14px;}
+  .school-name{font-size:13px;}
+  .school-name .sub{display:none;}
+  .calheader{padding:12px 14px 0;}
+  .calheader-title{font-size:17px;}
+  .legend{padding:8px 14px; gap:10px; font-size:10.5px;}
+  .grid-wrap{padding-bottom:16px;}
+  th.daycol .dnum{font-size:18px;}
+  td.cell{font-size:11.5px; height:46px;}
+  .calendar-pop{width:260px; left:auto; right:0;}
+}
+</style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="school-name">樂華天主教小學<span class="sub">教師個人時間表</span></div>
+    <div class="teacher-select-wrap">
+      <label for="teacherSelect">教師</label>
+      <select id="teacherSelect"></select>
+    </div>
+  </div>
 
-    <!-- 頂部導航欄 -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-3">
-            <!-- 上層：身份與對象選擇 -->
-            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="calendar" class="w-6 h-6 text-blue-600"></i>
-                    <h1 class="text-xl font-bold text-slate-900">時間表查詢系統</h1>
-                </div>
+  <div class="calheader">
+    <div class="calheader-title" id="calTitle"></div>
+    <div class="calheader-controls">
+      <div class="nav-group">
+        <button class="icon-btn" id="prevBtn" aria-label="上一頁" title="上一頁">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="today-btn" id="todayBtn">今日</button>
+        <button class="icon-btn" id="calBtn" aria-label="選擇日期" title="選擇日期">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="nextBtn" aria-label="下一頁" title="下一頁">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
 
-                <!-- 模式與對象選擇器 -->
-                <div class="flex items-center gap-3">
-                    <div class="inline-flex rounded-lg border border-slate-200 p-1 bg-slate-100">
-                        <button id="btn-mode-class" onclick="switchIdentity('class')" class="px-3 py-1.5 text-sm font-medium rounded-md transition-all active-tab">班別時間表</button>
-                        <button id="btn-mode-teacher" onclick="switchIdentity('teacher')" class="px-3 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600">教師個人時間表</button>
-                    </div>
-
-                    <select id="select-target" onchange="renderSchedule()" class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 font-medium shadow-sm">
-                        <!-- 動態載入班別或教師 -->
-                    </select>
-                </div>
+        <div class="calendar-pop" id="calPop">
+          <div class="calendar-pop-tabs">
+            <button class="active" id="tabDate" data-tab="date">按日期</button>
+            <button id="tabWeek" data-tab="week">按循環週</button>
+          </div>
+          <div class="cp-panel active" id="panelDate">
+            <div class="cp-month-nav">
+              <button id="cpPrevMonth">‹</button>
+              <span class="label" id="cpMonthLabel"></span>
+              <button id="cpNextMonth">›</button>
             </div>
-
-            <!-- 下層：日期控制與標題欄 -->
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                <!-- 左上邊控制區：< 今日 月曆 > -->
-                <div class="flex items-center gap-1 sm:gap-2">
-                    <button onclick="navigateDate(-1)" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition" title="上一頁">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="goToToday()" class="px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg border border-blue-200 transition">
-                        今日
-                    </button>
-                    <div class="relative">
-                        <input type="date" id="date-picker" onchange="onDatePicked(this.value)" class="absolute opacity-0 w-full h-full cursor-pointer left-0 top-0">
-                        <button class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition" title="選擇日期">
-                            <i data-lucide="calendar-days" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <button onclick="navigateDate(1)" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition" title="下一頁">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <!-- 置中標題：年月 -->
-                <div id="header-title" class="text-lg sm:text-xl font-bold text-slate-800 text-center">
-                    2026年3月
-                </div>
-
-                <!-- 右上角：視圖切換按鈕 -->
-                <div class="inline-flex rounded-lg border border-slate-200 p-1 bg-slate-100">
-                    <button id="btn-view-week" onclick="setViewMode('week')" class="px-3 py-1 text-sm font-medium rounded-md transition-all">週</button>
-                    <button id="btn-view-day" onclick="setViewMode('day')" class="px-3 py-1 text-sm font-medium rounded-md transition-all">日</button>
-                </div>
-            </div>
+            <div class="cp-grid" id="cpGrid"></div>
+          </div>
+          <div class="cp-panel" id="panelWeek">
+            <div class="week-list" id="weekList"></div>
+          </div>
         </div>
-    </header>
+      </div>
+      <div class="view-toggle">
+        <button id="viewWeekBtn" data-view="week">週</button>
+        <button id="viewDayBtn" data-view="day">日</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- 時間表內容顯示區域 -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4">
-        <!-- 狀態提示列 (顯示循環週/特別日子) -->
-        <div id="status-bar" class="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg flex items-center justify-between text-sm font-medium">
-            <!-- 動態插入資訊 -->
-        </div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--blue-600)"></span>循環日 (Day)</span>
+    <span><span class="dot" style="background:var(--amber-500)"></span>DAY S 特別活動日</span>
+    <span><span class="dot" style="background:var(--red-500)"></span>DAY E 考試日</span>
+    <span><span class="dot" style="background:var(--violet-500)"></span>DAY TD 教師專業發展日</span>
+    <span><span class="dot" style="background:var(--grey-400)"></span>未設定</span>
+  </div>
 
-        <!-- 時間表容器 -->
-        <div id="schedule-container" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-            <!-- 內容由 JS 動態生成 -->
-        </div>
-    </main>
+  <div id="dayBannerHost"></div>
+  <div id="daySingleHead"></div>
 
-    <script>
-        // --- 1. 資料庫模組 (模擬從 Excel / Docx 解析後的資料) ---
-        const schoolCalendar = {
-            // 格式: YYYY-MM-DD: { day: 'D1'~'D6'|'S'|'TD'|'E'|'HOLIDAY', weekNum: 循環週次 }
-            "2026-09-01": { day: "S", weekNum: 1, note: "開學日" },
-            "2026-09-04": { day: "D1", weekNum: 1, note: "按時間表上課" },
-            "2026-09-07": { day: "D2", weekNum: 1 },
-            "2026-09-08": { day: "D3", weekNum: 1 },
-            "2026-09-09": { day: "D4", weekNum: 1 },
-            "2026-09-10": { day: "D5", weekNum: 1 },
-            "2026-09-11": { day: "D6", weekNum: 1 },
-            "2026-03-01": { day: "D2", weekNum: 17 },
-            "2026-03-02": { day: "D3", weekNum: 17 },
-            "2026-03-03": { day: "D4", weekNum: 17 },
-            "2026-03-04": { day: "E", weekNum: 17, note: "考試日" },
-            "2026-03-05": { day: "E", weekNum: 17, note: "考試日" },
-            "2026-03-15": { day: "D5", weekNum: 18 },
-            "2026-03-16": { day: "D6", weekNum: 18 },
-            "2026-03-17": { day: "D1", weekNum: 18 },
-            "2026-03-18": { day: "D2", weekNum: 18 },
-            "2026-03-19": { day: "D3", weekNum: 18 },
-        };
+  <div class="grid-wrap">
+    <table class="tt" id="ttTable"></table>
+  </div>
+</div>
 
-        const timeSlots = [
-            { id: "p0", time: "07:55-08:00", name: "早操" },
-            { id: "p1", time: "08:00-08:10", name: "早會及早禱" },
-            { id: "p2", time: "08:10-08:25", name: "班主任課" },
-            { id: "p3", time: "08:25-09:00", name: "第1節" },
-            { id: "p4", time: "09:00-09:35", name: "第2節" },
-            { id: "p5", time: "09:35-10:10", name: "第3節" },
-            { id: "b1", time: "10:10-10:25", name: "小息一" },
-            { id: "p6", time: "10:25-11:00", name: "第4節" },
-            { id: "p7", time: "11:00-11:35", name: "第5節" },
-            { id: "p8", time: "11:35-12:10", name: "第6節" },
-            { id: "l1", time: "12:10-13:10", name: "午膳及小息" },
-            { id: "p9", time: "13:10-13:45", name: "第7節" },
-            { id: "p10", time: "13:45-14:20", name: "第8節" },
-            { id: "p11", time: "14:20-14:55", name: "第9節" },
-            { id: "p12", time: "14:55-15:10", name: "綜合個人學習時間" }
-        ];
+<script>
+const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2026-09-04":"Day1","2026-09-07":"Day2","2026-09-08":"Day3","2026-09-09":"Day4","2026-09-10":"Day5","2026-09-11":"Day6","2026-09-15":"Day1","2026-09-16":"Day2","2026-09-17":"Day3","2026-09-18":"Day4","2026-09-21":"Day5","2026-09-22":"Day6","2026-09-23":"Day1","2026-09-24":"Day2","2026-09-25":"Day3","2026-09-28":"Day4","2026-09-29":"Day5","2026-09-30":"Day6","2026-10-02":"Day1","2026-10-05":"Day2","2026-10-06":"Day3","2026-10-07":"Day4","2026-10-08":"Day5","2026-10-09":"Day6","2026-10-12":"Day1","2026-10-13":"Day2","2026-10-14":"Day3","2026-10-15":"Day4","2026-10-16":"S","2026-10-20":"Day5","2026-10-21":"Day6","2026-10-22":"Day1","2026-10-23":"Day2","2026-10-26":"Day3","2026-10-27":"Day4","2026-10-28":"Day5","2026-10-29":"Day6","2026-10-30":"Day1","2026-11-02":"Day2","2026-11-03":"Day3","2026-11-04":"Day4","2026-11-05":"Day5","2026-11-06":"Day6","2026-11-09":"Day1","2026-11-10":"Day2","2026-11-11":"Day3","2026-11-12":"E","2026-11-13":"Day4","2026-11-16":"E","2026-11-17":"Day5","2026-11-18":"Day6","2026-11-19":"Day1","2026-11-20":"S","2026-11-23":"Day2","2026-11-24":"Day3","2026-11-25":"Day4","2026-11-26":"Day5","2026-11-27":"TD","2026-11-30":"Day6","2026-12-01":"Day1","2026-12-02":"Day2","2026-12-03":"Day3","2026-12-04":"Day4","2026-12-07":"Day5","2026-12-08":"Day6","2026-12-09":"Day1","2026-12-10":"Day2","2026-12-11":"Day3","2026-12-12":"S","2026-12-14":"Day4","2026-12-15":"Day5","2026-12-16":"Day6","2026-12-17":"Day1","2026-12-18":"Day2","2026-12-21":"Day3","2026-12-22":"S","2027-01-04":"Day4","2027-01-05":"Day5","2027-01-06":"Day6","2027-01-07":"Day1","2027-01-08":"Day2","2027-01-11":"TD","2027-01-12":"S","2027-01-13":"Day3","2027-01-14":"Day4","2027-01-15":"Day5","2027-01-18":"Day6","2027-01-19":"Day1","2027-01-20":"Day2","2027-01-21":"Day3","2027-01-22":"Day4","2027-01-25":"Day5","2027-01-26":"Day6","2027-01-27":"Day1","2027-01-28":"Day2","2027-01-29":"S","2027-02-01":"Day3","2027-02-02":"Day4","2027-02-15":"Day5","2027-02-16":"Day6","2027-02-17":"Day1","2027-02-18":"Day2","2027-02-19":"S","2027-02-22":"Day3","2027-02-23":"Day4","2027-02-24":"Day5","2027-02-25":"Day6","2027-02-26":"Day1","2027-03-01":"Day2","2027-03-02":"Day3","2027-03-03":"Day4","2027-03-04":"E","2027-03-05":"E","2027-03-08":"E","2027-03-09":"E","2027-03-10":"S","2027-03-11":"S","2027-03-12":"S","2027-03-15":"Day5","2027-03-16":"Day6","2027-03-17":"Day1","2027-03-18":"Day2","2027-03-19":"Day3","2027-03-22":"Day4","2027-03-23":"Day5","2027-03-24":"Day6","2027-03-25":"Day1","2027-04-06":"TD","2027-04-07":"Day2","2027-04-08":"Day3","2027-04-09":"Day4","2027-04-12":"Day5","2027-04-13":"Day6","2027-04-14":"Day1","2027-04-15":"Day2","2027-04-16":"Day3","2027-04-19":"Day4","2027-04-20":"Day5","2027-04-21":"Day6","2027-04-22":"Day1","2027-04-23":"S","2027-04-26":"Day2","2027-04-27":"Day3","2027-04-28":"Day4","2027-04-29":"Day5","2027-04-30":"Day6","2027-05-03":"Day1","2027-05-04":"Day2","2027-05-05":"Day3","2027-05-06":"Day4","2027-05-07":"S","2027-05-08":"S","2027-05-11":"Day5","2027-05-12":"Day6","2027-05-14":"Day1","2027-05-17":"Day2","2027-05-18":"Day3","2027-05-19":"Day4","2027-05-20":"Day5","2027-05-21":"Day6","2027-05-24":"Day1","2027-05-25":"Day2","2027-05-26":"Day3","2027-05-27":"Day4","2027-05-28":"Day5","2027-05-31":"Day6","2027-06-01":"Day1","2027-06-02":"Day2","2027-06-03":"E","2027-06-04":"E","2027-06-07":"E","2027-06-08":"E","2027-06-10":"Day3","2027-06-11":"Day4","2027-06-14":"Day5","2027-06-15":"Day6","2027-06-16":"Day1","2027-06-17":"Day2","2027-06-18":"Day3","2027-06-21":"Day4","2027-06-22":"Day5","2027-06-23":"Day6","2027-06-24":"Day1","2027-06-25":"S","2027-06-28":"Day2","2027-06-29":"Day3","2027-06-30":"Day4","2027-07-02":"S","2027-07-05":"Day5","2027-07-06":"Day6","2027-07-07":"Day1","2027-07-08":"S","2027-07-09":"S"},"cycleWeek":{"2026-09-04":1,"2026-09-07":1,"2026-09-08":1,"2026-09-09":1,"2026-09-10":1,"2026-09-11":1,"2026-09-15":2,"2026-09-16":2,"2026-09-17":2,"2026-09-18":2,"2026-09-21":2,"2026-09-22":2,"2026-09-23":3,"2026-09-24":3,"2026-09-25":3,"2026-09-28":3,"2026-09-29":3,"2026-09-30":3,"2026-10-02":4,"2026-10-05":4,"2026-10-06":4,"2026-10-07":4,"2026-10-08":4,"2026-10-09":4,"2026-10-12":5,"2026-10-13":5,"2026-10-14":5,"2026-10-15":5,"2026-10-20":5,"2026-10-21":5,"2026-10-22":6,"2026-10-23":6,"2026-10-26":6,"2026-10-27":6,"2026-10-28":6,"2026-10-29":6,"2026-10-30":7,"2026-11-02":7,"2026-11-03":7,"2026-11-04":7,"2026-11-05":7,"2026-11-06":7,"2026-11-09":8,"2026-11-10":8,"2026-11-11":8,"2026-11-13":8,"2026-11-17":8,"2026-11-18":8,"2026-11-19":9,"2026-11-23":9,"2026-11-24":9,"2026-11-25":9,"2026-11-26":9,"2026-11-30":9,"2026-12-01":10,"2026-12-02":10,"2026-12-03":10,"2026-12-04":10,"2026-12-07":10,"2026-12-08":10,"2026-12-09":11,"2026-12-10":11,"2026-12-11":11,"2026-12-14":11,"2026-12-15":11,"2026-12-16":11,"2026-12-17":12,"2026-12-18":12,"2026-12-21":12,"2027-01-04":12,"2027-01-05":12,"2027-01-06":12,"2027-01-07":13,"2027-01-08":13,"2027-01-13":13,"2027-01-14":13,"2027-01-15":13,"2027-01-18":13,"2027-01-19":14,"2027-01-20":14,"2027-01-21":14,"2027-01-22":14,"2027-01-25":14,"2027-01-26":14,"2027-01-27":15,"2027-01-28":15,"2027-02-01":15,"2027-02-02":15,"2027-02-15":15,"2027-02-16":15,"2027-02-17":16,"2027-02-18":16,"2027-02-22":16,"2027-02-23":16,"2027-02-24":16,"2027-02-25":16,"2027-02-26":17,"2027-03-01":17,"2027-03-02":17,"2027-03-03":17,"2027-03-15":17,"2027-03-16":17,"2027-03-17":18,"2027-03-18":18,"2027-03-19":18,"2027-03-22":18,"2027-03-23":18,"2027-03-24":18,"2027-03-25":19,"2027-04-07":19,"2027-04-08":19,"2027-04-09":19,"2027-04-12":19,"2027-04-13":19,"2027-04-14":20,"2027-04-15":20,"2027-04-16":20,"2027-04-19":20,"2027-04-20":20,"2027-04-21":20,"2027-04-22":21,"2027-04-26":21,"2027-04-27":21,"2027-04-28":21,"2027-04-29":21,"2027-04-30":21,"2027-05-03":22,"2027-05-04":22,"2027-05-05":22,"2027-05-06":22,"2027-05-11":22,"2027-05-12":22,"2027-05-14":23,"2027-05-17":23,"2027-05-18":23,"2027-05-19":23,"2027-05-20":23,"2027-05-21":23,"2027-05-24":24,"2027-05-25":24,"2027-05-26":24,"2027-05-27":24,"2027-05-28":24,"2027-05-31":24,"2027-06-01":25,"2027-06-02":25,"2027-06-10":25,"2027-06-11":25,"2027-06-14":25,"2027-06-15":25,"2027-06-16":26,"2027-06-17":26,"2027-06-18":26,"2027-06-21":26,"2027-06-22":26,"2027-06-23":26,"2027-06-24":27,"2027-06-28":27,"2027-06-29":27,"2027-06-30":27,"2027-07-05":27,"2027-07-06":27,"2027-07-07":28},"specialDays":{"2026-09-01":{"code":"DAY S","category":"特別活動日","event":"開學日；開學週（半天上課）"},"2026-09-02":{"code":"DAY S","category":"特別活動日","event":"開學週（半天上課）"},"2026-09-03":{"code":"DAY S","category":"特別活動日","event":"開學週（半天上課）"},"2026-10-16":{"code":"DAY S","category":"特別活動日","event":"旅行日"},"2026-11-12":{"code":"DAY E","category":"考試日","event":"小一模擬評估、小二至小五考試；小六考試"},"2026-11-16":{"code":"DAY E","category":"考試日","event":"小一模擬評估、小二至小五考試；小六考試"},"2026-11-20":{"code":"DAY S","category":"特別活動日","event":"STEAM Day；同根同心（P.6，20–21/11）"},"2026-11-27":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2026-12-12":{"code":"DAY S","category":"特別活動日","event":"開放日；姊妹學校交流（P.5）"},"2026-12-22":{"code":"DAY S","category":"特別活動日","event":"慶祝聖誕"},"2027-01-11":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2027-01-12":{"code":"DAY S","category":"特別活動日","event":"特別活動日"},"2027-01-29":{"code":"DAY S","category":"特別活動日","event":"中華文化日（半天上課）"},"2027-02-19":{"code":"DAY S","category":"特別活動日","event":"校運會"},"2027-03-04":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-05":{"code":"DAY E","category":"考試日","event":"小一至小六考試；全港小學田徑比賽"},"2027-03-08":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-09":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-10":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）；姊妹學校交流（P.4）"},"2027-03-11":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）"},"2027-03-12":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）；教區聯校運動會"},"2027-04-06":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2027-04-23":{"code":"DAY S","category":"特別活動日","event":"世界閱讀日"},"2027-05-07":{"code":"DAY S","category":"特別活動日","event":"彩排日（半天上課）"},"2027-05-08":{"code":"DAY S","category":"特別活動日","event":"學藝展才華"},"2027-06-03":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-04":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-07":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-08":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-25":{"code":"DAY S","category":"特別活動日","event":"師生朝聖日"},"2027-07-02":{"code":"DAY S","category":"特別活動日","event":"小六畢業典禮"},"2027-07-08":{"code":"DAY S","category":"特別活動日","event":"結業禮"},"2027-07-09":{"code":"DAY S","category":"特別活動日","event":"校本活動日"}},"specialLabels":{"S":"特別活動日","E":"考試日","TD":"教師專業發展日"},"teachers":[{"id":"耀","name":"黃榮耀主任","sheet":"Teacher - 耀","earlyExercise":"早操","assemblyMain":{"Mon":"早會及早禱","Tue":"早會及早禱","Wed":"早會及早禱","Thu":"早會及早禱","Fri":"早禱"},"assemblySub":{"Mon":"【校長分享及 學校核心價值】","Tue":"【週訓】","Wed":"【升旗禮】","Thu":"【展藝台】","Fri":"【早讀】"},"homeroom":"班主任課","periods":[{"name":"第1節","time":"08:25-09:00","byDay":{"Day3":{"subject":"科學","location":"5A","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6D","parity":"odd"},"Day5":{"subject":"數學","location":"2C","parity":null},"Day6":{"subject":"數學","location":"2C","parity":null}}},{"name":"第2節","time":"09:00-09:35","byDay":{"Day3":{"subject":"科學","location":"5A","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6D","parity":"odd"},"Day5":{"subject":"數學","location":"2C","parity":null}}},{"name":"第3節","time":"09:35-10:10","byDay":{"Day2":{"subject":"數學","location":"2C","parity":null},"Day6":{"subject":"數學","location":"606室 5D","parity":null}}},{"name":"第4節","time":"10:25-11:00","byDay":{"Day2":{"subject":"科學","location":"AI Lab 5A","parity":"odd"},"Day3":{"subject":"數學","location":"2C","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6A","parity":"even"}}},{"name":"第5節","time":"11:00-11:35","byDay":{"Day1":{"subject":"數學","location":"2C","parity":null},"Day2":{"subject":"科學","location":"AI Lab 5A","parity":"odd"},"Day4":{"subject":"資訊科技","location":"AI Lab 6A","parity":"even"}}},{"name":"第6節","time":"11:50-12:25","byDay":{"Day1":{"subject":"數學","location":"606室 5D","parity":null},"Day4":{"subject":"數學","location":"2C","parity":null},"Day5":{"subject":"資訊科技","location":"語言室 3D","parity":null},"Day6":{"subject":"資訊科技","location":"AI Lab 5C","parity":"odd"}}},{"name":"第7節","time":"12:25-13:00","byDay":{"Day1":{"subject":"數學","location":"606室 5D","parity":null},"Day2":{"subject":"數學","location":"606室 5D","parity":null},"Day3":{"subject":"數學","location":"606室 5D","parity":null},"Day4":{"subject":"數學","location":"606室 5D","parity":null},"Day5":{"subject":"數學","location":"606室 5D","parity":null},"Day6":{"subject":"資訊科技","location":"AI Lab 5C","parity":"odd"}}},{"name":"第8節","time":"14:00-14:35","byDay":{"Day2":{"subject":"導修","location":"5A","parity":null},"Day5":{"subject":"導修","location":"5D","parity":null},"Day6":{"subject":"導修","location":"2C","parity":null}}}],"period9":{"Mon":{"subject":"樂天學滿分FUN","location":""},"Tue":{"subject":"樂天學滿分FUN","location":""},"Wed":{"subject":"樂天學滿分FUN","location":""},"Thu":{"subject":"成長號","location":""},"Fri":{"subject":"樂Kids MI","location":""}}},{"id":"楠","name":"陳若楠主任","sheet":"Teacher - 楠","earlyExercise":"早操","assemblyMain":{"Mon":"早會及早禱","Tue":"早會及早禱","Wed":"早會及早禱","Thu":"早會及早禱","Fri":"早禱"},"assemblySub":{"Mon":"【校長分享及 學校核心價值】","Tue":"【週訓】","Wed":"【升旗禮】","Thu":"【展藝台】","Fri":"【早讀】"},"homeroom":"班主任課","periods":[{"name":"第1節","time":"08:25-09:00","byDay":{"Day1":{"subject":"中文","location":"5A","parity":null},"Day2":{"subject":"中文","location":"5A","parity":null},"Day4":{"subject":"中文","location":"5A","parity":null},"Day6":{"subject":"中文","location":"2B","parity":null}}},{"name":"第2節","time":"09:00-09:35","byDay":{"Day4":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"5A","parity":null},"Day6":{"subject":"中文","location":"2B","parity":null}}},{"name":"第3節","time":"09:35-10:10","byDay":{"Day2":{"subject":"普通話","location":"5A","parity":null},"Day4":{"subject":"中文","location":"2B","parity":null},"Day5":{"subject":"中文","location":"5A","parity":null}}},{"name":"第4節","time":"10:25-11:00","byDay":{"Day1":{"subject":"中文","location":"2B","parity":null},"Day2":{"subject":"中默","location":"2B","parity":null},"Day3":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"2B","parity":null},"Day6":{"subject":"中默","location":"5A","parity":null}}},{"name":"第5節","time":"11:00-11:35","byDay":{"Day1":{"subject":"中文","location":"2B","parity":null},"Day2":{"subject":"中默","location":"2B","parity":null},"Day3":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"2B","parity":null},"Day6":{"subject":"中默","location":"5A","parity":null}}},{"name":"第6節","time":"11:50-12:25","byDay":{}},{"name":"第7節","time":"12:25-13:00","byDay":{"Day3":{"subject":"中文","location":"2B","parity":null},"Day5":{"subject":"普通話","location":"2B","parity":null}}},{"name":"第8節","time":"14:00-14:35","byDay":{"Day2":{"subject":"導修","location":"2B","parity":null},"Day4":{"subject":"導修","location":"5A","parity":null}}}],"period9":{"Mon":{"subject":"樂天學滿分FUN","location":""},"Tue":{"subject":"樂天學滿分FUN","location":""},"Wed":{"subject":"樂天學滿分FUN","location":""},"Thu":{"subject":"成長號","location":""},"Fri":{"subject":"樂Kids MI","location":""}}}],"termStart":"2026-09-01","termEnd":"2027-07-09","weeks":[{"week":1,"firstDate":"2026-09-04","label":"04-09-2026 至 11-09-2026"},{"week":2,"firstDate":"2026-09-15","label":"15-09-2026 至 22-09-2026"},{"week":3,"firstDate":"2026-09-23","label":"23-09-2026 至 30-09-2026"},{"week":4,"firstDate":"2026-10-02","label":"02-10-2026 至 09-10-2026"},{"week":5,"firstDate":"2026-10-12","label":"12-10-2026 至 21-10-2026"},{"week":6,"firstDate":"2026-10-22","label":"22-10-2026 至 29-10-2026"},{"week":7,"firstDate":"2026-10-30","label":"30-10-2026 至 06-11-2026"},{"week":8,"firstDate":"2026-11-09","label":"09-11-2026 至 18-11-2026"},{"week":9,"firstDate":"2026-11-19","label":"19-11-2026 至 30-11-2026"},{"week":10,"firstDate":"2026-12-01","label":"01-12-2026 至 08-12-2026"},{"week":11,"firstDate":"2026-12-09","label":"09-12-2026 至 16-12-2026"},{"week":12,"firstDate":"2026-12-17","label":"17-12-2026 至 06-01-2027"},{"week":13,"firstDate":"2027-01-07","label":"07-01-2027 至 18-01-2027"},{"week":14,"firstDate":"2027-01-19","label":"19-01-2027 至 26-01-2027"},{"week":15,"firstDate":"2027-01-27","label":"27-01-2027 至 16-02-2027"},{"week":16,"firstDate":"2027-02-17","label":"17-02-2027 至 25-02-2027"},{"week":17,"firstDate":"2027-02-26","label":"26-02-2027 至 16-03-2027"},{"week":18,"firstDate":"2027-03-17","label":"17-03-2027 至 24-03-2027"},{"week":19,"firstDate":"2027-03-25","label":"25-03-2027 至 13-04-2027"},{"week":20,"firstDate":"2027-04-14","label":"14-04-2027 至 21-04-2027"},{"week":21,"firstDate":"2027-04-22","label":"22-04-2027 至 30-04-2027"},{"week":22,"firstDate":"2027-05-03","label":"03-05-2027 至 12-05-2027"},{"week":23,"firstDate":"2027-05-14","label":"14-05-2027 至 21-05-2027"},{"week":24,"firstDate":"2027-05-24","label":"24-05-2027 至 31-05-2027"},{"week":25,"firstDate":"2027-06-01","label":"01-06-2027 至 15-06-2027"},{"week":26,"firstDate":"2027-06-16","label":"16-06-2027 至 23-06-2027"},{"week":27,"firstDate":"2027-06-24","label":"24-06-2027 至 06-07-2027"},{"week":28,"firstDate":"2027-07-07","label":"07-07-2027 至 07-07-2027"}]};
+</script>
+<script>
+// ====== Timetable App Logic ======
+(function(){
+  "use strict";
 
-        const classesList = ["1A", "1B", "1C", "1D", "4A", "4B", "5A", "6A"];
-        const teachersList = ["許碧玉老師", "林紫茵老師", "楊嘉慧老師", "王新燕老師", "葉子澄老師"];
+  const DATA = APPDATA;
+  const TEACHERS = DATA.teachers;
+  const DAY_MAP = DATA.dayMap;
+  const CYCLE_WEEK = DATA.cycleWeek;
+  const SPECIAL_DAYS = DATA.specialDays;
+  const SPECIAL_LABELS = DATA.specialLabels;
+  const WEEKS = DATA.weeks;
 
-        // 範例課表資料結構 [Day][SlotIndex]
-        const sampleSchedule = {
-            "D1": { p3: "音樂", p4: "中文", p5: "中文", p6: "英文(NET)", p7: "數學", p8: "體育", p9: "人文", p10: "宗教", p11: "閱讀" },
-            "D2": { p3: "英默", p4: "英默", p5: "數學", p6: "中默", p7: "中文", p8: "中文", p9: "視藝", p10: "視藝", p11: "班會" },
-            "D3": { p3: "科學", p4: "科學", p5: "中文", p6: "資訊科技", p7: "英文", p8: "英文", p9: "數學", p10: "體育", p11: "導修" },
-            "D4": { p3: "英文", p4: "數學", p5: "人文", p6: "中文", p7: "中文", p8: "音樂", p9: "科學", p10: "普通話", p11: "導修" },
-            "D5": { p3: "英文(NET)", p4: "英文(NET)", p5: "數學", p6: "視藝", p7: "中文", p8: "中文", p9: "人文", p10: "體育", p11: "導修" },
-            "D6": { p3: "中文", p4: "體育", p5: "科學", p6: "英文", p7: "英文", p8: "數學", p9: "數學", p10: "宗教", p11: "週會" }
-        };
+  const WEEKDAY_NAMES = ['','星期一','星期二','星期三','星期四','星期五'];
+  const WEEKDAY_KEYS  = ['','Mon','Tue','Wed','Thu','Fri'];
+  const DOW_SHORT = ['日','一','二','三','四','五','六'];
+  const MONTH_ZH = n => n + '月';
 
-        // --- 2. 系統狀態 ---
-        let currentIdentity = 'class'; // 'class' 或 'teacher'
-        let currentTarget = '1A';
-        let currentDate = new Date(2026, 2, 16); // 預設 2026年3月16日
-        let currentView = 'week'; // 'week' 或 'day'
+  // Row definitions in display order
+  const ROWS = [
+    {key:'earlyExercise', label:'早操',     time:'07:55-08:00', fixed:true, mondayOnly:true},
+    {key:'assembly',      label:'早會',     time:'08:00-08:10', fixed:true},
+    {key:'homeroom',      label:'班主任課', time:'08:10-08:25', fixed:true, merged:true},
+    {key:'period0',       label:'第1節',    time:'08:25-09:00', idx:0},
+    {key:'period1',       label:'第2節',    time:'09:00-09:35', idx:1},
+    {key:'period2',       label:'第3節',    time:'09:35-10:10', idx:2},
+    {key:'break1',        label:'小息一',   time:'10:10-10:25', fixed:true, merged:true},
+    {key:'period3',       label:'第4節',    time:'10:25-11:00', idx:3},
+    {key:'period4',       label:'第5節',    time:'11:00-11:35', idx:4},
+    {key:'break2',        label:'小息二',   time:'11:35-11:50', fixed:true, merged:true},
+    {key:'period5',       label:'第6節',    time:'11:50-12:25', idx:5},
+    {key:'period6',       label:'第7節',    time:'12:25-13:00', idx:6},
+    {key:'lunch',         label:'午膳',     time:'13:00-13:30', fixed:true, merged:true},
+    {key:'break3',        label:'小息三',   time:'13:30-14:00', fixed:true, merged:true},
+    {key:'period7',       label:'第8節',    time:'14:00-14:35', idx:7},
+    {key:'period9',       label:'第9節',    time:'14:35-15:20', weekdayBased:true},
+  ];
 
-        // --- 3. 初始化與響應式邏輯 ---
-        window.addEventListener('DOMContentLoaded', () => {
-            // 預設裝置判定：手機預設日檢視，電腦/平板預設週檢視
-            if (window.innerWidth < 768) {
-                currentView = 'day';
-            } else {
-                currentView = 'week';
-            }
-            
-            updateSelectOptions();
-            renderSchedule();
-            lucide.createIcons();
+  // ---------- date helpers ----------
+  function pad2(n){ return n<10 ? '0'+n : ''+n; }
+  function toKey(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+  function fromKey(k){ const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d); }
+  function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+  function startOfWeek(d){ // Monday
+    const r = new Date(d);
+    const dow = r.getDay(); // 0 Sun .. 6 Sat
+    const diff = (dow === 0) ? -6 : (1 - dow);
+    r.setDate(r.getDate() + diff);
+    r.setHours(0,0,0,0);
+    return r;
+  }
+  function sameDate(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+  function weekdayIdx(d){ const dow = d.getDay(); return (dow>=1 && dow<=5) ? dow : null; } // 1..5 = Mon..Fri
+
+  function dayInfo(key){
+    const v = DAY_MAP[key];
+    if(!v) return {type:'unset'};
+    if(v.indexOf('Day') === 0) return {type:'schoolday', day:v};
+    return {type:'special', code:v, detail: SPECIAL_DAYS[key]};
+  }
+  function cycleParity(key){
+    const wk = CYCLE_WEEK[key];
+    if(!wk) return null;
+    return {week:wk, parity: (wk % 2 === 1) ? 'odd' : 'even'};
+  }
+
+  // ---------- state ----------
+  const state = {
+    date: new Date(),
+    view: (window.matchMedia('(max-width: 768px)').matches) ? 'day' : 'week',
+    teacherIdx: 0,
+    calOpen: false,
+    calTab: 'date',
+    calMonthCursor: new Date()
+  };
+  state.date.setHours(0,0,0,0);
+
+  // ---------- cell content ----------
+  function getCellContent(teacher, rowDef, date){
+    const key = toKey(date);
+    const wIdx = weekdayIdx(date);
+    const info = dayInfo(key);
+
+    if(!wIdx){ return {state:'unset'}; }
+    if(info.type === 'unset'){ return {state:'unset'}; }
+    if(info.type === 'special'){ return {state:'special', code: info.code}; }
+
+    const wd = WEEKDAY_KEYS[wIdx];
+
+    if(rowDef.key === 'earlyExercise'){
+      if(wIdx !== 1) return {state:'empty'};
+      return teacher.earlyExercise ? {state:'filled', main: teacher.earlyExercise} : {state:'empty'};
+    }
+    if(rowDef.key === 'assembly'){
+      const main = teacher.assemblyMain[wd] || '';
+      const sub = teacher.assemblySub[wd] || '';
+      if(!main && !sub) return {state:'empty'};
+      return {state:'filled', main:main, sub:sub};
+    }
+    if(rowDef.key === 'homeroom'){
+      return teacher.homeroom ? {state:'filled', main: teacher.homeroom} : {state:'empty'};
+    }
+    if(rowDef.weekdayBased){
+      const e = teacher.period9[wd];
+      return e ? {state:'filled', main:e.subject} : {state:'empty'};
+    }
+    if(rowDef.idx !== undefined){
+      const dayKey = info.day; // Day1..Day6
+      const period = teacher.periods[rowDef.idx];
+      const e = period.byDay[dayKey];
+      if(!e) return {state:'empty'};
+      if(e.parity){
+        const par = cycleParity(key);
+        if(!par || par.parity !== e.parity) return {state:'empty'};
+      }
+      return {state:'filled', main:e.subject, sub:e.location};
+    }
+    return {state:'empty'};
+  }
+
+  // ---------- rendering ----------
+  function currentTeacher(){ return TEACHERS[state.teacherIdx]; }
+
+  function populateTeacherSelect(){
+    const sel = document.getElementById('teacherSelect');
+    sel.innerHTML = '';
+    TEACHERS.forEach((t, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = t.name;
+      sel.appendChild(opt);
+    });
+    sel.value = state.teacherIdx;
+    sel.addEventListener('change', () => {
+      state.teacherIdx = Number(sel.value);
+      renderAll();
+    });
+  }
+
+  function renderTitle(){
+    const el = document.getElementById('calTitle');
+    let refDate;
+    if(state.view === 'week'){
+      const mon = startOfWeek(state.date);
+      refDate = addDays(mon, 2); // Wednesday represents the week's month
+    } else {
+      refDate = state.date;
+    }
+    let html = refDate.getFullYear() + '年' + MONTH_ZH(refDate.getMonth()+1);
+    const key = toKey(state.view === 'week' ? refDate : state.date);
+    const par = cycleParity(toKey(state.view === 'week' ? refDate : state.date));
+    if(par){
+      html += '<span class="weekbadge">第 ' + par.week + ' 循環週 · ' + (par.parity==='odd' ? '單週' : '雙週') + '</span>';
+    }
+    el.innerHTML = html;
+  }
+
+  function badgeHtml(info){
+    if(info.type === 'schoolday'){
+      return '<span class="badge">' + info.day.replace('Day','Day ') + '</span>';
+    }
+    if(info.type === 'special'){
+      return '<span class="badge special-' + info.code + '">DAY ' + info.code + '</span>';
+    }
+    return '<span class="badge unset">未設定</span>';
+  }
+
+  function cellHtml(content, merged){
+    if(content.state === 'unset' || content.state === 'special'){
+      return '<td class="cell empty"></td>';
+    }
+    if(content.state === 'empty'){
+      return '<td class="cell empty"></td>';
+    }
+    if(merged){
+      return '<td class="cell merged">' + escapeHtml(content.main) + '</td>';
+    }
+    let html = '<span class="subj fixed-main">' + escapeHtml(content.main) + '</span>';
+    if(content.sub){
+      html += '<span class="loc fixed-sub">' + escapeHtml(content.sub) + '</span>';
+    }
+    return '<td class="cell">' + html + '</td>';
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderWeek(){
+    const table = document.getElementById('ttTable');
+    const teacher = currentTeacher();
+    const mon = startOfWeek(state.date);
+    const days = [1,2,3,4,5].map(i => addDays(mon, i-1));
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    let thead = '<thead><tr><th class="corner col-label">節數</th>';
+    days.forEach((d, i) => {
+      const key = toKey(d);
+      const info = dayInfo(key);
+      const isToday = sameDate(d, today);
+      thead += '<th class="daycol' + (isToday?' is-today':'') + '">' +
+        '<div class="wd">' + WEEKDAY_NAMES[i+1] + '</div>' +
+        '<div class="dnum">' + d.getDate() + '</div>' +
+        badgeHtml(info) +
+        '</th>';
+    });
+    thead += '</tr></thead>';
+
+    let tbody = '<tbody>';
+    ROWS.forEach(rowDef => {
+      const rowClass = rowDef.fixed ? 'fixed-row' : '';
+      tbody += '<tr class="' + rowClass + '">';
+      tbody += '<td class="period-label">' + rowDef.label + '<span class="time">' + rowDef.time + '</span></td>';
+
+      if(rowDef.merged){
+        // check if ALL weekdays are 'unset' or 'special' -> render empty merged; else show label once across span
+        // Determine per-day contents to decide if any school day exists this week
+        let anySchool = days.some(d => dayInfo(toKey(d)).type !== 'unset' && dayInfo(toKey(d)).type !== 'special');
+        if(!anySchool){
+          tbody += '<td class="cell empty" colspan="5"></td>';
+        } else {
+          const sample = getCellContent(teacher, rowDef, days.find(d => dayInfo(toKey(d)).type === 'schoolday') || days[0]);
+          const text = (sample.state === 'filled') ? sample.main : rowDef.label;
+          tbody += '<td class="cell merged" colspan="5">' + escapeHtml(text) + '</td>';
+        }
+      } else {
+        days.forEach(d => {
+          const key = toKey(d);
+          const isToday = sameDate(d, today);
+          const content = getCellContent(teacher, rowDef, d);
+          let td = cellHtml(content, false);
+          if(isToday){ td = td.replace('class="cell', 'class="cell is-today'); }
+          tbody += td;
         });
+      }
+      tbody += '</tr>';
+    });
+    tbody += '</tbody>';
 
-        // --- 4. 界面互動與邏輯處理 ---
-        function switchIdentity(identity) {
-            currentIdentity = identity;
-            document.getElementById('btn-mode-class').className = `px-3 py-1.5 text-sm font-medium rounded-md transition-all ${identity === 'class' ? 'active-tab' : 'text-slate-600'}`;
-            document.getElementById('btn-mode-teacher').className = `px-3 py-1.5 text-sm font-medium rounded-md transition-all ${identity === 'teacher' ? 'active-tab' : 'text-slate-600'}`;
-            updateSelectOptions();
-            renderSchedule();
-        }
+    table.innerHTML = thead + tbody;
+    document.getElementById('dayBannerHost').innerHTML = '';
+    document.getElementById('daySingleHead').innerHTML = '';
+  }
 
-        function updateSelectOptions() {
-            const select = document.getElementById('select-target');
-            select.innerHTML = '';
-            const list = currentIdentity === 'class' ? classesList : teachersList;
-            list.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item;
-                opt.textContent = item;
-                select.appendChild(opt);
-            });
-            currentTarget = list[0];
-        }
+  function renderDay(){
+    const table = document.getElementById('ttTable');
+    const teacher = currentTeacher();
+    const d = state.date;
+    const key = toKey(d);
+    const info = dayInfo(key);
+    const wIdx = weekdayIdx(d);
 
-        function setViewMode(mode) {
-            currentView = mode;
-            document.getElementById('btn-view-week').className = `px-3 py-1 text-sm font-medium rounded-md transition-all ${mode === 'week' ? 'active-tab' : 'text-slate-600'}`;
-            document.getElementById('btn-view-day').className = `px-3 py-1 text-sm font-medium rounded-md transition-all ${mode === 'day' ? 'active-tab' : 'text-slate-600'}`;
-            renderSchedule();
-        }
+    // single day head
+    const headHost = document.getElementById('daySingleHead');
+    headHost.innerHTML = '<div class="day-single-head">' +
+      '<div class="dow">' + (wIdx ? WEEKDAY_NAMES[wIdx] : DOW_toFull(d.getDay())) + '</div>' +
+      '<div class="dnum">' + d.getDate() + ' 日</div>' +
+      badgeHtml(wIdx ? info : {type:'unset'}) +
+      '</div>';
 
-        function navigateDate(direction) {
-            if (currentView === 'week') {
-                currentDate.setDate(currentDate.getDate() + (direction * 7));
-            } else {
-                currentDate.setDate(currentDate.getDate() + direction);
-            }
-            renderSchedule();
-        }
+    // banner
+    const bannerHost = document.getElementById('dayBannerHost');
+    if(!wIdx){
+      bannerHost.innerHTML = '<div class="daybanner weekend">今天是週末，沒有課堂安排。</div>';
+    } else if(info.type === 'special'){
+      const label = SPECIAL_LABELS[info.code] || info.code;
+      const detail = info.detail ? (info.detail.event || '') : '';
+      bannerHost.innerHTML = '<div class="daybanner special-' + info.code + '"><b>DAY ' + info.code + ' · ' + label + '</b>&nbsp; ' + escapeHtml(detail) + '</div>';
+    } else if(info.type === 'unset'){
+      bannerHost.innerHTML = '<div class="daybanner unset">此日期尚未設定循環日資料。</div>';
+    } else {
+      bannerHost.innerHTML = '';
+    }
 
-        function goToToday() {
-            currentDate = new Date();
-            renderSchedule();
-        }
+    let thead = '<thead><tr><th class="corner col-label">節數</th><th class="daycol">當日課堂</th></tr></thead>';
+    let tbody = '<tbody>';
 
-        function onDatePicked(val) {
-            if (val) {
-                currentDate = new Date(val);
-                renderSchedule();
-            }
-        }
+    if(!wIdx || info.type === 'special' || info.type === 'unset'){
+      tbody += '</tbody>';
+      table.innerHTML = thead + tbody;
+      return;
+    }
 
-        function formatDateKey(d) {
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${y}-${m}-${day}`;
-        }
+    ROWS.forEach(rowDef => {
+      const rowClass = rowDef.fixed ? 'fixed-row' : '';
+      tbody += '<tr class="' + rowClass + '">';
+      tbody += '<td class="period-label">' + rowDef.label + '<span class="time">' + rowDef.time + '</span></td>';
+      const content = getCellContent(teacher, rowDef, d);
+      if(rowDef.merged){
+        const text = (content.state === 'filled') ? content.main : rowDef.label;
+        tbody += '<td class="cell merged">' + escapeHtml(text) + '</td>';
+      } else {
+        tbody += cellHtml(content, false);
+      }
+      tbody += '</tr>';
+    });
+    tbody += '</tbody>';
+    table.innerHTML = thead + tbody;
+  }
 
-        function getScienceOrITSubject(grade, isEvenWeek, baseSubject) {
-            // 四至六年級單/雙週切換邏輯
-            if (grade >= 4 && (baseSubject === '科學' || baseSubject === '資訊科技')) {
-                return isEvenWeek ? '資訊科技' : '科學';
-            }
-            return baseSubject;
-        }
+  function DOW_toFull(dow){ return ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][dow]; }
 
-        // --- 5. 渲染視圖 ---
-        function renderSchedule() {
-            currentTarget = document.getElementById('select-target').value || currentTarget;
-            
-            // 更新置中標題 (年月)
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth() + 1;
-            document.getElementById('header-title').textContent = `${year}年${month}月`;
+  function renderGrid(){
+    if(state.view === 'week') renderWeek(); else renderDay();
+  }
 
-            const container = document.getElementById('schedule-container');
-            const statusBar = document.getElementById('status-bar');
+  function renderViewToggle(){
+    document.getElementById('viewWeekBtn').classList.toggle('active', state.view === 'week');
+    document.getElementById('viewDayBtn').classList.toggle('active', state.view === 'day');
+    document.body.classList.toggle('day-view', state.view === 'day');
+  }
 
-            if (currentView === 'week') {
-                renderWeekView(container, statusBar);
-            } else {
-                renderDayView(container, statusBar);
-            }
-            lucide.createIcons();
-        }
+  function renderAll(){
+    renderTitle();
+    renderViewToggle();
+    renderGrid();
+    if(state.calOpen) renderCalendarPopover();
+  }
 
-        // 渲染週曆檢視
-        function renderWeekView(container, statusBar) {
-            // 計算當前星期的週一日期
-            const startOfWeek = new Date(currentDate);
-            const dayOfWeek = startOfWeek.getDay();
-            const diff = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            startOfWeek.setDate(diff);
+  // ---------- calendar popover ----------
+  function renderCalendarPopover(){
+    document.getElementById('tabDate').classList.toggle('active', state.calTab==='date');
+    document.getElementById('tabWeek').classList.toggle('active', state.calTab==='week');
+    document.getElementById('panelDate').classList.toggle('active', state.calTab==='date');
+    document.getElementById('panelWeek').classList.toggle('active', state.calTab==='week');
 
-            let weekDays = [];
-            for (let i = 0; i < 5; i++) { // 顯示星期一至五
-                let d = new Date(startOfWeek);
-                d.setDate(d.getDate() + i);
-                weekDays.push(d);
-            }
+    if(state.calTab === 'date'){
+      renderMonthGrid();
+    } else {
+      renderWeekList();
+    }
+  }
 
-            const firstDayKey = formatDateKey(weekDays[0]);
-            const calInfo = schoolCalendar[firstDayKey] || { weekNum: 1 };
-            const isEvenWeek = (calInfo.weekNum % 2 === 0);
+  function renderMonthGrid(){
+    const cursor = state.calMonthCursor;
+    const y = cursor.getFullYear(), m = cursor.getMonth();
+    document.getElementById('cpMonthLabel').textContent = y + '年' + MONTH_ZH(m+1);
+    const grid = document.getElementById('cpGrid');
+    let html = '';
+    ['一','二','三','四','五','六','日'].forEach(l => html += '<div class="dow">' + l + '</div>');
 
-            statusBar.innerHTML = `
-                <div><span class="font-bold">目前顯示：</span>${currentTarget} (${currentIdentity === 'class' ? '班別' : '教師'})</div>
-                <div><span class="font-bold">循環週次：</span>第 ${calInfo.weekNum} 週 (${isEvenWeek ? '雙週' : '單週'})</div>
-            `;
+    const first = new Date(y, m, 1);
+    const startOffset = (first.getDay() === 0) ? 6 : first.getDay()-1; // Monday-first
+    const gridStart = addDays(first, -startOffset);
+    const today = new Date(); today.setHours(0,0,0,0);
 
-            let html = `
-                <table class="w-full text-center border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-700">
-                            <th class="p-3 border-r border-slate-200 w-28 text-sm font-semibold">時間 / 節次</th>
-            `;
+    for(let i=0;i<42;i++){
+      const d = addDays(gridStart, i);
+      const key = toKey(d);
+      const inMonth = d.getMonth() === m;
+      const isWeekend = !weekdayIdx(d);
+      const info = dayInfo(key);
+      const isSchool = !isWeekend && (info.type !== 'unset');
+      const classes = ['cp-day'];
+      if(!inMonth) classes.push('out');
+      if(isWeekend) classes.push('weekend');
+      if(isSchool) classes.push('school'); else if(inMonth && !isWeekend) classes.push('disabled');
+      if(sameDate(d, today)) classes.push('today');
+      if(sameDate(d, state.date)) classes.push('selected');
+      html += '<button type="button" class="' + classes.join(' ') + '" data-key="' + key + '">' + d.getDate() + '</button>';
+    }
+    grid.innerHTML = html;
 
-            const weekNames = ["一", "二", "三", "四", "五"];
-            weekDays.forEach((d, idx) => {
-                const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
-                const key = formatDateKey(d);
-                const dayCal = schoolCalendar[key] || { day: "D" + (idx + 1) };
-                html += `
-                    <th class="p-2 border-r border-slate-200 min-w-[120px]">
-                        <div class="text-xs text-slate-500">星期${weekNames[idx]}</div>
-                        <div class="text-sm font-bold">${dateStr}</div>
-                        <div class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded bg-blue-100 text-blue-700">${dayCal.day}</div>
-                    </th>
-                `;
-            });
-            html += `</tr></thead><tbody>`;
+    grid.querySelectorAll('.cp-day').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.date = fromKey(btn.dataset.key);
+        closeCalendar();
+        renderAll();
+      });
+    });
+  }
 
-            // 課節渲染
-            timeSlots.forEach(slot => {
-                const isRest = slot.id.startsWith('b') || slot.id.startsWith('l') || slot.id.startsWith('p0') || slot.id.startsWith('p1') || slot.id.startsWith('p2');
-                const rowBg = isRest ? "bg-slate-50/50 text-slate-500" : "hover:bg-slate-50/80";
+  function renderWeekList(){
+    const host = document.getElementById('weekList');
+    let html = '';
+    WEEKS.forEach(w => {
+      html += '<button type="button" class="week-item" data-date="' + w.firstDate + '">' +
+        '<b>第 ' + w.week + ' 循環週 · ' + (w.week % 2 === 1 ? '單週' : '雙週') + '</b>' +
+        '<span class="range">' + w.label + '</span>' +
+        '</button>';
+    });
+    host.innerHTML = html;
+    host.querySelectorAll('.week-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.date = fromKey(btn.dataset.date);
+        state.calMonthCursor = new Date(state.date);
+        closeCalendar();
+        renderAll();
+      });
+    });
+  }
 
-                html += `<tr class="border-b border-slate-200 ${rowBg}">
-                    <td class="p-2 border-r border-slate-200 font-medium text-xs">
-                        <div>${slot.name}</div>
-                        <div class="text-[10px] text-slate-400">${slot.time}</div>
-                    </td>`;
+  function openCalendar(){
+    state.calOpen = true;
+    state.calMonthCursor = new Date(state.date.getFullYear(), state.date.getMonth(), 1);
+    document.getElementById('calPop').classList.add('open');
+    renderCalendarPopover();
+  }
+  function closeCalendar(){
+    state.calOpen = false;
+    document.getElementById('calPop').classList.remove('open');
+  }
 
-                weekDays.forEach((d) => {
-                    const key = formatDateKey(d);
-                    const dayCal = schoolCalendar[key] || { day: "D1" };
-                    const dayCode = dayCal.day; // D1-D6, S, TD, E
+  // ---------- navigation ----------
+  function goPrev(){
+    state.date = addDays(state.date, state.view === 'week' ? -7 : -1);
+    renderAll();
+  }
+  function goNext(){
+    state.date = addDays(state.date, state.view === 'week' ? 7 : 1);
+    renderAll();
+  }
+  function goToday(){
+    state.date = new Date(); state.date.setHours(0,0,0,0);
+    renderAll();
+  }
+  function setView(v){
+    state.view = v;
+    renderAll();
+  }
 
-                    if (["S", "TD", "E"].includes(dayCode)) {
-                        const bgMap = { "S": "bg-yellow-50 text-yellow-800", "TD": "bg-purple-50 text-purple-800", "E": "bg-red-50 text-red-800" };
-                        const nameMap = { "S": "特別活動", "TD": "教師發展日", "E": "考試日" };
-                        html += `<td class="p-2 border-r border-slate-200 ${bgMap[dayCode]} font-bold text-xs">${nameMap[dayCode]}</td>`;
-                    } else if (sampleSchedule[dayCode]) {
-                        let subject = sampleSchedule[dayCode][slot.id] || "-";
-                        // 處理高年級單雙週
-                        const grade = parseInt(currentTarget) || 4;
-                        subject = getScienceOrITSubject(grade, isEvenWeek, subject);
+  // ---------- init ----------
+  function init(){
+    populateTeacherSelect();
+    renderAll();
 
-                        html += `<td class="p-2 border-r border-slate-200 text-sm font-medium">${subject}</td>`;
-                    } else {
-                        html += `<td class="p-2 border-r border-slate-200 text-sm text-slate-400">-</td>`;
-                    }
-                });
+    document.getElementById('prevBtn').addEventListener('click', goPrev);
+    document.getElementById('nextBtn').addEventListener('click', goNext);
+    document.getElementById('todayBtn').addEventListener('click', goToday);
+    document.getElementById('viewWeekBtn').addEventListener('click', () => setView('week'));
+    document.getElementById('viewDayBtn').addEventListener('click', () => setView('day'));
 
-                html += `</tr>`;
-            });
+    document.getElementById('calBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(state.calOpen) closeCalendar(); else openCalendar();
+    });
+    document.getElementById('calPop').addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', () => { if(state.calOpen) closeCalendar(); });
 
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
+    document.getElementById('tabDate').addEventListener('click', () => { state.calTab='date'; renderCalendarPopover(); });
+    document.getElementById('tabWeek').addEventListener('click', () => { state.calTab='week'; renderCalendarPopover(); });
 
-        // 渲染日曆檢視
-        function renderDayView(container, statusBar) {
-            const dateKey = formatDateKey(currentDate);
-            const calInfo = schoolCalendar[dateKey] || { day: "D1", weekNum: 1 };
-            const isEvenWeek = (calInfo.weekNum % 2 === 0);
-            const weekNames = ["日", "一", "二", "三", "四", "五", "六"];
-            const dayOfWeekStr = weekNames[currentDate.getDay()];
+    document.getElementById('cpPrevMonth').addEventListener('click', () => {
+      state.calMonthCursor = new Date(state.calMonthCursor.getFullYear(), state.calMonthCursor.getMonth()-1, 1);
+      renderMonthGrid();
+    });
+    document.getElementById('cpNextMonth').addEventListener('click', () => {
+      state.calMonthCursor = new Date(state.calMonthCursor.getFullYear(), state.calMonthCursor.getMonth()+1, 1);
+      renderMonthGrid();
+    });
+  }
 
-            statusBar.innerHTML = `
-                <div><span class="font-bold">目前顯示：</span>${currentTarget} (${currentDate.getMonth() + 1}月${currentDate.getDate()}日 星期${dayOfWeekStr})</div>
-                <div><span class="font-bold">課堂類型：</span><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold text-xs">${calInfo.day}</span></div>
-            `;
+  document.addEventListener('DOMContentLoaded', init);
+})();
 
-            let html = `
-                <div class="divide-y divide-slate-200">
-                    <div class="p-3 bg-slate-100 font-bold text-slate-700 text-center flex justify-between items-center px-6">
-                        <span>時間與節次</span>
-                        <span>科目 / 活動</span>
-                    </div>
-            `;
-
-            timeSlots.forEach(slot => {
-                const dayCode = calInfo.day;
-                let subject = "-";
-
-                if (["S", "TD", "E"].includes(dayCode)) {
-                    const nameMap = { "S": "特別活動日 (不用按時間表上課)", "TD": "教師專業發展日 (學生假期)", "E": "考試日" };
-                    subject = nameMap[dayCode];
-                } else if (sampleSchedule[dayCode]) {
-                    const baseSubject = sampleSchedule[dayCode][slot.id] || "-";
-                    const grade = parseInt(currentTarget) || 4;
-                    subject = getScienceOrITSubject(grade, isEvenWeek, baseSubject);
-                }
-
-                const isRest = slot.id.startsWith('b') || slot.id.startsWith('l') || slot.id.startsWith('p0') || slot.id.startsWith('p1') || slot.id.startsWith('p2');
-
-                html += `
-                    <div class="p-4 flex items-center justify-between ${isRest ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-50 transition">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-800 text-sm">${slot.name}</span>
-                            <span class="text-xs text-slate-400">${slot.time}</span>
-                        </div>
-                        <div class="text-base font-semibold ${isRest ? 'text-slate-500' : 'text-blue-600'}">
-                            ${subject}
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `</div>`;
-            container.innerHTML = html;
-        }
-    </script>
+</script>
 </body>
 </html>
