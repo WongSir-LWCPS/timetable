@@ -97,7 +97,7 @@ button{font-family:inherit; cursor:pointer;}
   font-weight:500;
   white-space:nowrap;
 }
-select#teacherSelect, select#compareSelect{
+select#teacherSelect, select#freeCompareSelect, select#dualSelect{
   appearance:none;
   -webkit-appearance:none;
   background:var(--navy-700) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%238fa0c9"/></svg>') no-repeat right 12px center;
@@ -110,7 +110,7 @@ select#teacherSelect, select#compareSelect{
   font-family:inherit;
   min-width:150px;
 }
-select#teacherSelect:focus, select#compareSelect:focus{outline:2px solid var(--blue-500); outline-offset:1px;}
+select#teacherSelect:focus, select#freeCompareSelect:focus, select#dualSelect:focus{outline:2px solid var(--blue-500); outline-offset:1px;}
 
 /* ---------- Header / calendar controls ---------- */
 .calheader{
@@ -304,6 +304,28 @@ select#teacherSelect:focus, select#compareSelect:focus{outline:2px solid var(--b
 .week-item b{font-family:var(--font-num); color:var(--blue-600); font-size:13px;}
 .week-item .range{color:var(--text-muted); font-size:11.5px; font-family:var(--font-num);}
 
+/* ---------- Dual-teacher legend ---------- */
+.dual-legend{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:9px 20px;
+  background:#fbfcfe;
+  border-bottom:1px solid var(--border);
+  font-size:12.5px;
+  color:var(--text);
+}
+.dual-legend .item{display:inline-flex; align-items:center; gap:6px; font-weight:600;}
+.dual-legend .tag{
+  width:18px; height:18px;
+  border-radius:50%;
+  background:var(--navy-700);
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+
 /* ---------- Grid ---------- */
 .grid-wrap{
   flex:1;
@@ -408,6 +430,47 @@ td.cell.empty{color:#d7dbe6;}
 td.cell.empty::before{content:"—";}
 td.cell.merged{font-weight:700; color:var(--text); letter-spacing:.5px;}
 
+/* ---------- Dual-teacher cell (both teachers shown together) ---------- */
+td.cell.dual{
+  text-align:left;
+  padding:5px 5px;
+  height:auto;
+}
+.dual-row{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding:3px 5px;
+  border-radius:6px;
+  font-size:10.5px;
+  min-height:20px;
+}
+.dual-row + .dual-row{margin-top:3px;}
+.dual-row.empty{color:#b7bdcc;}
+.dual-tag{
+  flex:0 0 auto;
+  width:18px; height:18px;
+  border-radius:50%;
+  background:var(--navy-700);
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  line-height:1;
+  display:flex; align-items:center; justify-content:center;
+}
+.dual-row.empty .dual-tag{background:#c7ccd8;}
+.dual-content{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.dual-content .subj{font-weight:700; font-size:10.5px;}
+.dual-content .dloc-wrap{display:inline-flex; align-items:center; gap:3px; margin-left:4px;}
+.dual-content .room{font-size:9px; opacity:.75;}
+.dual-content .class-chip{font-size:9px; font-weight:800; opacity:.85;}
+.dual-row.duty{background:#fff4e0;}
+.dual-row.duty .duty-tag{
+  font-size:8.5px; font-weight:800; padding:1px 5px;
+  background:var(--amber-500); color:#fff; border-radius:10px; margin-right:3px;
+}
+.dual-row.duty .duty-loc{font-weight:700;}
+
 td.cell.common-free{background:#e7f8ef !important;}
 tr.fixed-row td.cell.common-free{background:#e7f8ef !important;}
 .free-pill{
@@ -455,14 +518,14 @@ td.cell.no-data-msg::before{content:none;}
 @media (max-width:1024px){
   .app{max-width:100%;}
   .topbar{padding:12px 16px;}
-  select#teacherSelect, select#compareSelect{min-width:120px; font-size:13px;}
+  select#teacherSelect, select#freeCompareSelect, select#dualSelect{min-width:120px; font-size:13px;}
 }
 
 @media (max-width:768px){
   .topbar{padding:10px 12px; gap:10px;}
   .topbar-right{gap:10px; width:100%;}
   .teacher-select-wrap{flex:1 1 auto;}
-  select#teacherSelect, select#compareSelect{width:100%; min-width:0;}
+  select#teacherSelect, select#freeCompareSelect, select#dualSelect{width:100%; min-width:0;}
   .school-name{font-size:13px;}
   .school-name .sub{display:none;}
   .calheader{padding:8px 12px;}
@@ -492,6 +555,11 @@ td.cell.no-data-msg::before{content:none;}
   .free-pill{font-size:9.5px; padding:2px 7px;}
   td.cell.duty-cell .duty-tag{font-size:9px; padding:1px 6px;}
   td.cell.duty-cell .duty-loc{font-size:10.5px;}
+  .dual-row{font-size:9.5px; padding:2px 4px; gap:4px;}
+  .dual-tag{width:14px; height:14px; font-size:8px;}
+  .dual-content .subj{font-size:9.5px;}
+  .dual-content .room, .dual-content .class-chip{font-size:8px;}
+  .dual-legend{padding:7px 12px; font-size:11px; gap:12px;}
 
   .calendar-pop{width:min(90vw, 300px); left:0; right:auto;}
   .cp-day{font-size:11.5px; padding:5px 0;}
@@ -530,11 +598,17 @@ td.cell.no-data-msg::before{content:none;}
         <select id="teacherSelect"></select>
       </div>
       <div class="teacher-select-wrap">
-        <label for="compareSelect">共同空堂比較</label>
-        <select id="compareSelect"></select>
+        <label for="freeCompareSelect">共同空堂</label>
+        <select id="freeCompareSelect"></select>
+      </div>
+      <div class="teacher-select-wrap">
+        <label for="dualSelect">同時顯示</label>
+        <select id="dualSelect"></select>
       </div>
     </div>
   </div>
+
+  <div class="legend dual-legend" id="dualLegend" style="display:none;"></div>
 
   <div class="calheader">
     <div class="calheader-controls">
@@ -582,7 +656,7 @@ td.cell.no-data-msg::before{content:none;}
 </div>
 
 <script>
-const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2026-09-04":"Day1","2026-09-07":"Day2","2026-09-08":"Day3","2026-09-09":"Day4","2026-09-10":"Day5","2026-09-11":"Day6","2026-09-15":"Day1","2026-09-16":"Day2","2026-09-17":"Day3","2026-09-18":"Day4","2026-09-21":"Day5","2026-09-22":"Day6","2026-09-23":"Day1","2026-09-24":"Day2","2026-09-25":"Day3","2026-09-28":"Day4","2026-09-29":"Day5","2026-09-30":"Day6","2026-10-02":"Day1","2026-10-05":"Day2","2026-10-06":"Day3","2026-10-07":"Day4","2026-10-08":"Day5","2026-10-09":"Day6","2026-10-12":"Day1","2026-10-13":"Day2","2026-10-14":"Day3","2026-10-15":"Day4","2026-10-16":"S","2026-10-20":"Day5","2026-10-21":"Day6","2026-10-22":"Day1","2026-10-23":"Day2","2026-10-26":"Day3","2026-10-27":"Day4","2026-10-28":"Day5","2026-10-29":"Day6","2026-10-30":"Day1","2026-11-02":"Day2","2026-11-03":"Day3","2026-11-04":"Day4","2026-11-05":"Day5","2026-11-06":"Day6","2026-11-09":"Day1","2026-11-10":"Day2","2026-11-11":"Day3","2026-11-12":"E","2026-11-13":"Day4","2026-11-16":"E","2026-11-17":"Day5","2026-11-18":"Day6","2026-11-19":"Day1","2026-11-20":"S","2026-11-23":"Day2","2026-11-24":"Day3","2026-11-25":"Day4","2026-11-26":"Day5","2026-11-27":"TD","2026-11-30":"Day6","2026-12-01":"Day1","2026-12-02":"Day2","2026-12-03":"Day3","2026-12-04":"Day4","2026-12-07":"Day5","2026-12-08":"Day6","2026-12-09":"Day1","2026-12-10":"Day2","2026-12-11":"Day3","2026-12-12":"S","2026-12-14":"Day4","2026-12-15":"Day5","2026-12-16":"Day6","2026-12-17":"Day1","2026-12-18":"Day2","2026-12-21":"Day3","2026-12-22":"S","2027-01-04":"Day4","2027-01-05":"Day5","2027-01-06":"Day6","2027-01-07":"Day1","2027-01-08":"Day2","2027-01-11":"TD","2027-01-12":"S","2027-01-13":"Day3","2027-01-14":"Day4","2027-01-15":"Day5","2027-01-18":"Day6","2027-01-19":"Day1","2027-01-20":"Day2","2027-01-21":"Day3","2027-01-22":"Day4","2027-01-25":"Day5","2027-01-26":"Day6","2027-01-27":"Day1","2027-01-28":"Day2","2027-01-29":"S","2027-02-01":"Day3","2027-02-02":"Day4","2027-02-15":"Day5","2027-02-16":"Day6","2027-02-17":"Day1","2027-02-18":"Day2","2027-02-19":"S","2027-02-22":"Day3","2027-02-23":"Day4","2027-02-24":"Day5","2027-02-25":"Day6","2027-02-26":"Day1","2027-03-01":"Day2","2027-03-02":"Day3","2027-03-03":"Day4","2027-03-04":"E","2027-03-05":"E","2027-03-08":"E","2027-03-09":"E","2027-03-10":"S","2027-03-11":"S","2027-03-12":"S","2027-03-15":"Day5","2027-03-16":"Day6","2027-03-17":"Day1","2027-03-18":"Day2","2027-03-19":"Day3","2027-03-22":"Day4","2027-03-23":"Day5","2027-03-24":"Day6","2027-03-25":"Day1","2027-04-06":"TD","2027-04-07":"Day2","2027-04-08":"Day3","2027-04-09":"Day4","2027-04-12":"Day5","2027-04-13":"Day6","2027-04-14":"Day1","2027-04-15":"Day2","2027-04-16":"Day3","2027-04-19":"Day4","2027-04-20":"Day5","2027-04-21":"Day6","2027-04-22":"Day1","2027-04-23":"S","2027-04-26":"Day2","2027-04-27":"Day3","2027-04-28":"Day4","2027-04-29":"Day5","2027-04-30":"Day6","2027-05-03":"Day1","2027-05-04":"Day2","2027-05-05":"Day3","2027-05-06":"Day4","2027-05-07":"S","2027-05-08":"S","2027-05-11":"Day5","2027-05-12":"Day6","2027-05-14":"Day1","2027-05-17":"Day2","2027-05-18":"Day3","2027-05-19":"Day4","2027-05-20":"Day5","2027-05-21":"Day6","2027-05-24":"Day1","2027-05-25":"Day2","2027-05-26":"Day3","2027-05-27":"Day4","2027-05-28":"Day5","2027-05-31":"Day6","2027-06-01":"Day1","2027-06-02":"Day2","2027-06-03":"E","2027-06-04":"E","2027-06-07":"E","2027-06-08":"E","2027-06-10":"Day3","2027-06-11":"Day4","2027-06-14":"Day5","2027-06-15":"Day6","2027-06-16":"Day1","2027-06-17":"Day2","2027-06-18":"Day3","2027-06-21":"Day4","2027-06-22":"Day5","2027-06-23":"Day6","2027-06-24":"Day1","2027-06-25":"S","2027-06-28":"Day2","2027-06-29":"Day3","2027-06-30":"Day4","2027-07-02":"S","2027-07-05":"Day5","2027-07-06":"Day6","2027-07-07":"Day1","2027-07-08":"S","2027-07-09":"S"},"cycleWeek":{"2026-09-04":1,"2026-09-07":1,"2026-09-08":1,"2026-09-09":1,"2026-09-10":1,"2026-09-11":1,"2026-09-15":2,"2026-09-16":2,"2026-09-17":2,"2026-09-18":2,"2026-09-21":2,"2026-09-22":2,"2026-09-23":3,"2026-09-24":3,"2026-09-25":3,"2026-09-28":3,"2026-09-29":3,"2026-09-30":3,"2026-10-02":4,"2026-10-05":4,"2026-10-06":4,"2026-10-07":4,"2026-10-08":4,"2026-10-09":4,"2026-10-12":5,"2026-10-13":5,"2026-10-14":5,"2026-10-15":5,"2026-10-20":5,"2026-10-21":5,"2026-10-22":6,"2026-10-23":6,"2026-10-26":6,"2026-10-27":6,"2026-10-28":6,"2026-10-29":6,"2026-10-30":7,"2026-11-02":7,"2026-11-03":7,"2026-11-04":7,"2026-11-05":7,"2026-11-06":7,"2026-11-09":8,"2026-11-10":8,"2026-11-11":8,"2026-11-13":8,"2026-11-17":8,"2026-11-18":8,"2026-11-19":9,"2026-11-23":9,"2026-11-24":9,"2026-11-25":9,"2026-11-26":9,"2026-11-30":9,"2026-12-01":10,"2026-12-02":10,"2026-12-03":10,"2026-12-04":10,"2026-12-07":10,"2026-12-08":10,"2026-12-09":11,"2026-12-10":11,"2026-12-11":11,"2026-12-14":11,"2026-12-15":11,"2026-12-16":11,"2026-12-17":12,"2026-12-18":12,"2026-12-21":12,"2027-01-04":12,"2027-01-05":12,"2027-01-06":12,"2027-01-07":13,"2027-01-08":13,"2027-01-13":13,"2027-01-14":13,"2027-01-15":13,"2027-01-18":13,"2027-01-19":14,"2027-01-20":14,"2027-01-21":14,"2027-01-22":14,"2027-01-25":14,"2027-01-26":14,"2027-01-27":15,"2027-01-28":15,"2027-02-01":15,"2027-02-02":15,"2027-02-15":15,"2027-02-16":15,"2027-02-17":16,"2027-02-18":16,"2027-02-22":16,"2027-02-23":16,"2027-02-24":16,"2027-02-25":16,"2027-02-26":17,"2027-03-01":17,"2027-03-02":17,"2027-03-03":17,"2027-03-15":17,"2027-03-16":17,"2027-03-17":18,"2027-03-18":18,"2027-03-19":18,"2027-03-22":18,"2027-03-23":18,"2027-03-24":18,"2027-03-25":19,"2027-04-07":19,"2027-04-08":19,"2027-04-09":19,"2027-04-12":19,"2027-04-13":19,"2027-04-14":20,"2027-04-15":20,"2027-04-16":20,"2027-04-19":20,"2027-04-20":20,"2027-04-21":20,"2027-04-22":21,"2027-04-26":21,"2027-04-27":21,"2027-04-28":21,"2027-04-29":21,"2027-04-30":21,"2027-05-03":22,"2027-05-04":22,"2027-05-05":22,"2027-05-06":22,"2027-05-11":22,"2027-05-12":22,"2027-05-14":23,"2027-05-17":23,"2027-05-18":23,"2027-05-19":23,"2027-05-20":23,"2027-05-21":23,"2027-05-24":24,"2027-05-25":24,"2027-05-26":24,"2027-05-27":24,"2027-05-28":24,"2027-05-31":24,"2027-06-01":25,"2027-06-02":25,"2027-06-10":25,"2027-06-11":25,"2027-06-14":25,"2027-06-15":25,"2027-06-16":26,"2027-06-17":26,"2027-06-18":26,"2027-06-21":26,"2027-06-22":26,"2027-06-23":26,"2027-06-24":27,"2027-06-28":27,"2027-06-29":27,"2027-06-30":27,"2027-07-05":27,"2027-07-06":27,"2027-07-07":28},"specialDays":{"2026-09-01":{"code":"DAY S","category":"特別活動日","event":"開學日；開學週（半天上課）"},"2026-09-02":{"code":"DAY S","category":"特別活動日","event":"開學週（半天上課）"},"2026-09-03":{"code":"DAY S","category":"特別活動日","event":"開學週（半天上課）"},"2026-10-16":{"code":"DAY S","category":"特別活動日","event":"旅行日"},"2026-11-12":{"code":"DAY E","category":"考試日","event":"小一模擬評估、小二至小五考試；小六考試"},"2026-11-16":{"code":"DAY E","category":"考試日","event":"小一模擬評估、小二至小五考試；小六考試"},"2026-11-20":{"code":"DAY S","category":"特別活動日","event":"STEAM Day；同根同心（P.6，20–21/11）"},"2026-11-27":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2026-12-12":{"code":"DAY S","category":"特別活動日","event":"開放日；姊妹學校交流（P.5）"},"2026-12-22":{"code":"DAY S","category":"特別活動日","event":"慶祝聖誕"},"2027-01-11":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2027-01-12":{"code":"DAY S","category":"特別活動日","event":"特別活動日"},"2027-01-29":{"code":"DAY S","category":"特別活動日","event":"中華文化日（半天上課）"},"2027-02-19":{"code":"DAY S","category":"特別活動日","event":"校運會"},"2027-03-04":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-05":{"code":"DAY E","category":"考試日","event":"小一至小六考試；全港小學田徑比賽"},"2027-03-08":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-09":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-10":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）；姊妹學校交流（P.4）"},"2027-03-11":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）"},"2027-03-12":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）；教區聯校運動會"},"2027-04-06":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2027-04-23":{"code":"DAY S","category":"特別活動日","event":"世界閱讀日"},"2027-05-07":{"code":"DAY S","category":"特別活動日","event":"彩排日（半天上課）"},"2027-05-08":{"code":"DAY S","category":"特別活動日","event":"學藝展才華"},"2027-06-03":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-04":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-07":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-08":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-25":{"code":"DAY S","category":"特別活動日","event":"師生朝聖日"},"2027-07-02":{"code":"DAY S","category":"特別活動日","event":"小六畢業典禮"},"2027-07-08":{"code":"DAY S","category":"特別活動日","event":"結業禮"},"2027-07-09":{"code":"DAY S","category":"特別活動日","event":"校本活動日"}},"specialLabels":{"S":"特別活動日","E":"考試日","TD":"教師專業發展日"},"teachers":[{"id":"楠","name":"陳若楠主任","sheet":"Teacher - 楠","earlyExercise":"早操","assemblyMain":{"Mon":"早會及早禱","Tue":"早會及早禱","Wed":"早會及早禱","Thu":"早會及早禱","Fri":"早禱"},"assemblySub":{"Mon":"【校長分享及 學校核心價值】","Tue":"【週訓】","Wed":"【升旗禮】","Thu":"【展藝台】","Fri":"【早讀】"},"homeroom":"班主任課","periods":[{"name":"第1節","time":"08:25-09:00","byDay":{"Day1":{"subject":"中文","location":"5A","parity":null},"Day2":{"subject":"中文","location":"5A","parity":null},"Day4":{"subject":"中文","location":"5A","parity":null},"Day6":{"subject":"中文","location":"2B","parity":null}}},{"name":"第2節","time":"09:00-09:35","byDay":{"Day4":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"5A","parity":null},"Day6":{"subject":"中文","location":"2B","parity":null}}},{"name":"第3節","time":"09:35-10:10","byDay":{"Day2":{"subject":"普通話","location":"5A","parity":null},"Day4":{"subject":"中文","location":"2B","parity":null},"Day5":{"subject":"中文","location":"5A","parity":null}}},{"name":"第4節","time":"10:25-11:00","byDay":{"Day1":{"subject":"中文","location":"2B","parity":null},"Day2":{"subject":"中默","location":"2B","parity":null},"Day3":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"2B","parity":null},"Day6":{"subject":"中默","location":"5A","parity":null}}},{"name":"第5節","time":"11:00-11:35","byDay":{"Day1":{"subject":"中文","location":"2B","parity":null},"Day2":{"subject":"中默","location":"2B","parity":null},"Day3":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"2B","parity":null},"Day6":{"subject":"中默","location":"5A","parity":null}}},{"name":"第6節","time":"11:50-12:25","byDay":{}},{"name":"第7節","time":"12:25-13:00","byDay":{"Day3":{"subject":"中文","location":"2B","parity":null},"Day5":{"subject":"普通話","location":"2B","parity":null}}},{"name":"第8節","time":"14:00-14:35","byDay":{"Day2":{"subject":"導修","location":"2B","parity":null},"Day4":{"subject":"導修","location":"5A","parity":null}}}],"period9":{"Tue":{"subject":"5A","location":""},"Wed":{"subject":"2B","location":""},"Thu":{"subject":"成長號","location":""},"Fri":{"subject":"樂Kids MI","location":""}}},{"id":"耀","name":"黃榮耀主任","sheet":"Teacher - 耀","earlyExercise":"早操","assemblyMain":{"Mon":"早會及早禱","Tue":"早會及早禱","Wed":"早會及早禱","Thu":"早會及早禱","Fri":"早禱"},"assemblySub":{"Mon":"【校長分享及 學校核心價值】","Tue":"【週訓】","Wed":"【升旗禮】","Thu":"【展藝台】","Fri":"【早讀】"},"homeroom":"班主任課","periods":[{"name":"第1節","time":"08:25-09:00","byDay":{"Day3":{"subject":"科學","location":"5A","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6D","parity":"odd"},"Day5":{"subject":"數學","location":"2C","parity":null},"Day6":{"subject":"數學","location":"2C","parity":null}}},{"name":"第2節","time":"09:00-09:35","byDay":{"Day3":{"subject":"科學","location":"5A","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6D","parity":"odd"},"Day5":{"subject":"數學","location":"2C","parity":null}}},{"name":"第3節","time":"09:35-10:10","byDay":{"Day2":{"subject":"數學","location":"2C","parity":null},"Day6":{"subject":"數學","location":"606室 5D","parity":null}}},{"name":"第4節","time":"10:25-11:00","byDay":{"Day2":{"subject":"科學","location":"AI Lab 5A","parity":"odd"},"Day3":{"subject":"數學","location":"2C","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6A","parity":"even"}}},{"name":"第5節","time":"11:00-11:35","byDay":{"Day1":{"subject":"數學","location":"2C","parity":null},"Day2":{"subject":"科學","location":"AI Lab 5A","parity":"odd"},"Day4":{"subject":"資訊科技","location":"AI Lab 6A","parity":"even"}}},{"name":"第6節","time":"11:50-12:25","byDay":{"Day1":{"subject":"數學","location":"606室 5D","parity":null},"Day4":{"subject":"數學","location":"2C","parity":null},"Day5":{"subject":"資訊科技","location":"語言室 3D","parity":null},"Day6":{"subject":"資訊科技","location":"AI Lab 5C","parity":"odd"}}},{"name":"第7節","time":"12:25-13:00","byDay":{"Day1":{"subject":"數學","location":"606室 5D","parity":null},"Day2":{"subject":"數學","location":"606室 5D","parity":null},"Day3":{"subject":"數學","location":"606室 5D","parity":null},"Day4":{"subject":"數學","location":"606室 5D","parity":null},"Day5":{"subject":"數學","location":"606室 5D","parity":null},"Day6":{"subject":"資訊科技","location":"AI Lab 5C","parity":"odd"}}},{"name":"第8節","time":"14:00-14:35","byDay":{"Day2":{"subject":"導修","location":"5A","parity":null},"Day5":{"subject":"導修","location":"5D","parity":null},"Day6":{"subject":"導修","location":"2C","parity":null}}}],"period9":{"Mon":{"subject":"5D","location":""},"Tue":{"subject":"2C","location":""},"Thu":{"subject":"成長號","location":""},"Fri":{"subject":"樂Kids MI","location":""}}}],"termStart":"2026-09-01","termEnd":"2027-07-09","weeks":[{"week":1,"firstDate":"2026-09-04","label":"04-09-2026 至 11-09-2026"},{"week":2,"firstDate":"2026-09-15","label":"15-09-2026 至 22-09-2026"},{"week":3,"firstDate":"2026-09-23","label":"23-09-2026 至 30-09-2026"},{"week":4,"firstDate":"2026-10-02","label":"02-10-2026 至 09-10-2026"},{"week":5,"firstDate":"2026-10-12","label":"12-10-2026 至 21-10-2026"},{"week":6,"firstDate":"2026-10-22","label":"22-10-2026 至 29-10-2026"},{"week":7,"firstDate":"2026-10-30","label":"30-10-2026 至 06-11-2026"},{"week":8,"firstDate":"2026-11-09","label":"09-11-2026 至 18-11-2026"},{"week":9,"firstDate":"2026-11-19","label":"19-11-2026 至 30-11-2026"},{"week":10,"firstDate":"2026-12-01","label":"01-12-2026 至 08-12-2026"},{"week":11,"firstDate":"2026-12-09","label":"09-12-2026 至 16-12-2026"},{"week":12,"firstDate":"2026-12-17","label":"17-12-2026 至 06-01-2027"},{"week":13,"firstDate":"2027-01-07","label":"07-01-2027 至 18-01-2027"},{"week":14,"firstDate":"2027-01-19","label":"19-01-2027 至 26-01-2027"},{"week":15,"firstDate":"2027-01-27","label":"27-01-2027 至 16-02-2027"},{"week":16,"firstDate":"2027-02-17","label":"17-02-2027 至 25-02-2027"},{"week":17,"firstDate":"2027-02-26","label":"26-02-2027 至 16-03-2027"},{"week":18,"firstDate":"2027-03-17","label":"17-03-2027 至 24-03-2027"},{"week":19,"firstDate":"2027-03-25","label":"25-03-2027 至 13-04-2027"},{"week":20,"firstDate":"2027-04-14","label":"14-04-2027 至 21-04-2027"},{"week":21,"firstDate":"2027-04-22","label":"22-04-2027 至 30-04-2027"},{"week":22,"firstDate":"2027-05-03","label":"03-05-2027 至 12-05-2027"},{"week":23,"firstDate":"2027-05-14","label":"14-05-2027 至 21-05-2027"},{"week":24,"firstDate":"2027-05-24","label":"24-05-2027 至 31-05-2027"},{"week":25,"firstDate":"2027-06-01","label":"01-06-2027 至 15-06-2027"},{"week":26,"firstDate":"2027-06-16","label":"16-06-2027 至 23-06-2027"},{"week":27,"firstDate":"2027-06-24","label":"24-06-2027 至 06-07-2027"},{"week":28,"firstDate":"2027-07-07","label":"07-07-2027 至 07-07-2027"}],"dutyIndex":{"陳若楠":{"Day1":[{"slot":"morningA","location":"正門"},{"slot":"recess3","location":"內廣場"}],"Day4":[{"slot":"morningB","location":"正門"},{"slot":"recess2","location":"球場"},{"slot":"lunch","location":"6樓"}],"Day6":[{"slot":"recess3","location":"涼亭"}]},"楊詠文":{"Day2":[{"slot":"morningA","location":"正門"}],"Day6":[{"slot":"morningA","location":"正門"},{"slot":"recess3","location":"6樓"}],"Day3":[{"slot":"morningB","location":"正門"},{"slot":"lunch","location":"1D"}],"Day1":[{"slot":"recess3","location":"球場"},{"slot":"recess3","location":"內外廣場巡查點名"}]},"莊榮昌":{"Day3":[{"slot":"morningA","location":"正門"},{"slot":"recess1","location":"全校巡查點名"}],"Day4":[{"slot":"morningA","location":"正門"}],"Day2":[{"slot":"morningB","location":"正門"},{"slot":"recess2","location":"全校巡查點名"}],"Day1":[{"slot":"recess1","location":"全校巡查點名"}],"Day5":[{"slot":"recess3","location":"內廣場"}],"Day6":[{"slot":"recess3","location":"內外廣場巡查點名"},{"slot":"lunch","location":"3樓"}]},"陳志紅":{"Day5":[{"slot":"morningA","location":"正門"},{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"lunch","location":"6樓"}],"Day2":[{"slot":"recess2","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"球場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day4":[{"slot":"lunch","location":"4樓"}]},"鄭凱迎":{"Day1":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"內廣場"}],"Day4":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"3樓"}],"Day5":[{"slot":"recess1","location":"球場"},{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"recess1","location":"2樓大堂及2梯口"}]},"林衍婷":{"Day2":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess1","location":"球場"},{"slot":"recess3","location":"5樓"}],"Day4":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess1","location":"4樓"},{"slot":"lunch","location":"1D"}],"Day3":[{"slot":"recess3","location":"1樓"}]},"劉秋婷":{"Day3":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"1C"}],"Day6":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"5樓"}],"Day5":[{"slot":"morningB","location":"涼亭（雨天：6樓）"},{"slot":"recess2","location":"球場"}],"Day1":[{"slot":"recess3","location":"2樓"}]},"陳寶如":{"Day4":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"2樓"}],"Day3":[{"slot":"recess1","location":"球場"},{"slot":"recess2","location":"1樓"}],"Day6":[{"slot":"recess1","location":"4樓"}],"Day1":[{"slot":"recess3","location":"1樓"}],"Day5":[{"slot":"lunch","location":"1C"}]},"楊美貞":{"Day5":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"球場"}],"Day3":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess1","location":"涼亭+樂天長廊"}],"Day6":[{"slot":"recess1","location":"5樓"}],"Day1":[{"slot":"recess3","location":"2樓"}],"Day2":[{"slot":"lunch","location":"1A"}]},"劉泳炘":{"Day6":[{"slot":"morningA","location":"G02（雨天：1樓）"}],"Day5":[{"slot":"morningA","location":"涼亭（雨天：6樓）"},{"slot":"lunch","location":"1D"}],"Day2":[{"slot":"recess1","location":"4樓"},{"slot":"lunch","location":"4樓"}],"Day1":[{"slot":"recess2","location":"球場"}],"Day3":[{"slot":"lunch","location":"6樓"}]},"許碧玉":{"Day1":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"}],"Day5":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"}],"Day3":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"}],"Day6":[{"slot":"recess2","location":"3樓"},{"slot":"lunch","location":"1A"}],"Day2":[{"slot":"recess3","location":"1樓"}],"Day4":[{"slot":"recess3","location":"6樓"}]},"劉敏聰":{"Day2":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"內廣場"}],"Day1":[{"slot":"morningB","location":"涼亭（雨天：6樓）"}],"Day5":[{"slot":"recess1","location":"2樓大堂及2梯口"},{"slot":"recess3","location":"1樓"}],"Day4":[{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day6":[{"slot":"lunch","location":"5樓"}]},"黃秀玲":{"Day3":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"lunch","location":"5樓"}],"Day1":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"3樓"}],"Day4":[{"slot":"recess1","location":"5樓"}],"Day5":[{"slot":"recess2","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"3樓"}]},"陳雋彥":{"Day4":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"}],"Day1":[{"slot":"morningA","location":"涼亭（雨天：6樓）"}],"Day5":[{"slot":"recess2","location":"1樓"},{"slot":"recess3","location":"涼亭"}],"Day3":[{"slot":"recess2","location":"球場"},{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"lunch","location":"6樓"}]},"楊嘉慧":{"Day6":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"球場"}],"Day5":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"}],"Day3":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"涼亭"}],"Day1":[{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day2":[{"slot":"recess3","location":"2樓"}]},"鄭惠施":{"Day1":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"涼亭"}],"Day3":[{"slot":"morningA","location":"球場（雨天：4樓）"}],"Day4":[{"slot":"recess1","location":"內廣場"}],"Day5":[{"slot":"recess1","location":"內廣場"}],"Day2":[{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"recess3","location":"3樓"}]},"繆嘉旋":{"Day2":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess2","location":"1樓"},{"slot":"recess3","location":"涼亭"}],"Day1":[{"slot":"recess1","location":"6樓"},{"slot":"recess2","location":"3樓"}],"Day3":[{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"recess3","location":"樂天長廊"}]},"邱美華":{"Day3":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"}],"Day6":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"2樓"}],"Day2":[{"slot":"recess1","location":"內廣場"}],"Day5":[{"slot":"recess1","location":"4樓"}],"Day1":[{"slot":"recess3","location":"球場"}],"Day4":[{"slot":"recess3","location":"樂天長廊"}]},"唐文慧":{"Day4":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"morningB","location":"G02（雨天：1樓）"}],"Day5":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess2","location":"3樓"},{"slot":"recess3","location":"樂天長廊"}],"Day6":[{"slot":"recess3","location":"4樓"}]},"葉佩華":{"Day1":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"recess2","location":"1樓"},{"slot":"recess3","location":"樂天長廊"}],"Day2":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"}],"Day6":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"}],"Day5":[{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"lunch","location":"2樓"}]},"黃少華":{"Day2":[{"slot":"morningA","location":"球場（雨天：4樓）"}],"Day1":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"}],"Day4":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"4樓"}],"Day5":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess3","location":"2樓"}],"Day6":[{"slot":"recess3","location":"內廣場"}]},"林紫茵":{"Day4":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"lunch","location":"1B"}],"Day3":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"}],"Day5":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"1B"}],"Day6":[{"slot":"recess1","location":"球場"}],"Day2":[{"slot":"lunch","location":"1D"}]},"馮宝恩":{"Day5":[{"slot":"morningA","location":"球場（雨天：4樓）"}],"Day4":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"3樓"}],"Day1":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess2","location":"內廣場"}],"Day2":[{"slot":"recess3","location":"樂天長廊"}],"Day3":[{"slot":"lunch","location":"3樓"}]},"陳憲樺":{"Day6":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"morningA","location":"涼亭（雨天：6樓）"}],"Day4":[{"slot":"morningB","location":"球場（雨天：4樓）"}],"Day3":[{"slot":"recess1","location":"5樓"},{"slot":"recess3","location":"球場"}],"Day1":[{"slot":"recess3","location":"球場"}]},"老家倩":{"Day1":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"}],"Day3":[{"slot":"morningA","location":"涼亭（雨天：6樓）"},{"slot":"lunch","location":"4樓"}],"Day2":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess1","location":"6樓"}],"Day6":[{"slot":"recess3","location":"球場"}],"Day4":[{"slot":"lunch","location":"1C"}]},"張詠希":{"Day2":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"},{"slot":"lunch","location":"6樓"}],"Day5":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess2","location":"2樓"},{"slot":"lunch","location":"2樓"}],"Day1":[{"slot":"recess1","location":"內廣場"}],"Day4":[{"slot":"recess3","location":"5樓"}]},"陳梓彤":{"Day5":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"}],"Day6":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess2","location":"內廣場"}],"Day4":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"recess3","location":"3樓"}],"Day2":[{"slot":"recess3","location":"6樓"}]},"李潔欣":{"Day6":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"內廣場"}],"Day2":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day4":[{"slot":"recess2","location":"1樓"},{"slot":"lunch","location":"1A"}]},"彭富鴻":{"Day4":[{"slot":"morningA","location":"涼亭（雨天：6樓）"}],"Day1":[{"slot":"morningB","location":"球場（雨天：4樓）"}],"Day6":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess2","location":"球場"}],"Day2":[{"slot":"recess3","location":"球場"}],"Day3":[{"slot":"recess3","location":"2樓"}],"Day5":[{"slot":"recess3","location":"2樓"}]},"謝利":{"Day6":[{"slot":"morningA","location":"涼亭（雨天：6樓）"},{"slot":"recess3","location":"內廣場"}],"Day2":[{"slot":"morningB","location":"涼亭（雨天：6樓）"}],"Day1":[{"slot":"recess1","location":"球場"}],"Day4":[{"slot":"recess1","location":"球場"}],"Day3":[{"slot":"recess3","location":"內廣場"}],"Day5":[{"slot":"lunch","location":"3樓"}]},"周曉勤":{"Day1":[{"slot":"morningB","location":"正門"},{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day2":[{"slot":"recess2","location":"內廣場"}],"Day4":[{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day5":[{"slot":"recess3","location":"1樓"}],"Day6":[{"slot":"lunch","location":"1C"}]},"葉盈":{"Day5":[{"slot":"morningB","location":"正門"}],"Day2":[{"slot":"recess2","location":"3樓"},{"slot":"recess3","location":"4樓"}],"Day4":[{"slot":"recess2","location":"內廣場"}],"Day3":[{"slot":"lunch","location":"1A"}],"Day6":[{"slot":"lunch","location":"1B"}]},"黃嘉瑜":{"Day6":[{"slot":"morningB","location":"正門"}],"Day1":[{"slot":"recess1","location":"5樓"}],"Day5":[{"slot":"recess1","location":"全校巡查點名"}],"Day2":[{"slot":"recess2","location":"球場"}],"Day4":[{"slot":"recess2","location":"全校巡查點名"},{"slot":"lunch","location":"5樓"}],"Day3":[{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}]},"姚森森":{"Day1":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"3樓"}],"Day3":[{"slot":"morningB","location":"涼亭（雨天：6樓）"}],"Day6":[{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day2":[{"slot":"recess2","location":"2樓"},{"slot":"lunch","location":"2樓"}],"Day5":[{"slot":"lunch","location":"1A"}]},"施晉裕":{"Day2":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"3樓"}],"Day1":[{"slot":"recess1","location":"涼亭+樂天長廊"}],"Day4":[{"slot":"recess1","location":"6樓"},{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"recess1","location":"6樓"}],"Day3":[{"slot":"recess3","location":"內廣場"}]},"王新燕":{"Day3":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess1","location":"4樓"},{"slot":"recess3","location":"3樓"}],"Day5":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"lunch","location":"4樓"}],"Day6":[{"slot":"recess1","location":"內廣場"}],"Day1":[{"slot":"recess3","location":"1樓"}]},"梁恩奇":{"Day6":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess2","location":"1樓"},{"slot":"lunch","location":"1D"}],"Day3":[{"slot":"recess1","location":"內廣場"}],"Day4":[{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day5":[{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"recess3","location":"內廣場"}]},"余嘉希":{"Day2":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"}],"Day3":[{"slot":"recess2","location":"2樓"},{"slot":"recess3","location":"1樓"}],"Day4":[{"slot":"recess2","location":"3樓"}],"Day5":[{"slot":"recess2","location":"內廣場"}],"Day1":[{"slot":"recess3","location":"內廣場"}],"Day6":[{"slot":"lunch","location":"4樓"}]},"李燕麗":{"Day4":[{"slot":"morningB","location":"涼亭（雨天：6樓）"},{"slot":"recess3","location":"1樓"}],"Day6":[{"slot":"morningB","location":"涼亭（雨天：6樓）"},{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day3":[{"slot":"recess2","location":"3樓"},{"slot":"recess3","location":"樂天長廊"}],"Day2":[{"slot":"lunch","location":"1B"}]},"甄昫盈":{"Day1":[{"slot":"morningB","location":"圖書館"},{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"}],"Day2":[{"slot":"morningB","location":"圖書館"},{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"}],"Day3":[{"slot":"morningB","location":"圖書館"},{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"}],"Day4":[{"slot":"morningB","location":"圖書館"},{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"}],"Day5":[{"slot":"morningB","location":"圖書館"},{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"}],"Day6":[{"slot":"morningB","location":"圖書館"},{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"}]},"梁婉儀":{"Day2":[{"slot":"recess1","location":"涼亭+樂天長廊"}],"Day6":[{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"recess2","location":"全校巡查點名"}],"Day3":[{"slot":"recess2","location":"全校巡查點名"},{"slot":"recess3","location":"2樓"}],"Day5":[{"slot":"recess3","location":"3樓"}],"Day4":[{"slot":"lunch","location":"2樓"}]},"何嘉欣":{"Day4":[{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"recess1","location":"5樓"},{"slot":"recess3","location":"3樓"}],"Day1":[{"slot":"recess2","location":"2樓"}],"Day6":[{"slot":"recess2","location":"2樓"},{"slot":"lunch","location":"2樓"}]},"黃榮耀":{"Day1":[{"slot":"recess1","location":"4樓"}],"Day5":[{"slot":"recess1","location":"6樓"},{"slot":"lunch","location":"5樓"}],"Day3":[{"slot":"recess2","location":"內廣場"},{"slot":"lunch","location":"1B"}],"Day2":[{"slot":"lunch","location":"5樓"}]},"彭少婷":{"Day5":[{"slot":"recess1","location":"5樓"},{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day3":[{"slot":"recess1","location":"6樓"}],"Day6":[{"slot":"recess1","location":"全校巡查點名"}],"Day1":[{"slot":"recess2","location":"全校巡查點名"}],"Day4":[{"slot":"recess3","location":"涼亭"}],"Day2":[{"slot":"lunch","location":"1C"}]},"楊宇進":{"Day2":[{"slot":"recess1","location":"全校巡查點名"}],"Day4":[{"slot":"recess1","location":"全校巡查點名"},{"slot":"recess2","location":"2樓"},{"slot":"recess3","location":"球場"}],"Day3":[{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day5":[{"slot":"recess2","location":"全校巡查點名"}],"Day6":[{"slot":"recess3","location":"1樓"}]}},"slotLabels":{"morningA":"課前值日 (7:30-7:45)","morningB":"課前值日 (7:45-8:00)","recess1":"小息一值日","recess2":"小息二值日","recess3":"小息三值日","lunch":"午膳值日"}};
+const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2026-09-04":"Day1","2026-09-07":"Day2","2026-09-08":"Day3","2026-09-09":"Day4","2026-09-10":"Day5","2026-09-11":"Day6","2026-09-15":"Day1","2026-09-16":"Day2","2026-09-17":"Day3","2026-09-18":"Day4","2026-09-21":"Day5","2026-09-22":"Day6","2026-09-23":"Day1","2026-09-24":"Day2","2026-09-25":"Day3","2026-09-28":"Day4","2026-09-29":"Day5","2026-09-30":"Day6","2026-10-02":"Day1","2026-10-05":"Day2","2026-10-06":"Day3","2026-10-07":"Day4","2026-10-08":"Day5","2026-10-09":"Day6","2026-10-12":"Day1","2026-10-13":"Day2","2026-10-14":"Day3","2026-10-15":"Day4","2026-10-16":"S","2026-10-20":"Day5","2026-10-21":"Day6","2026-10-22":"Day1","2026-10-23":"Day2","2026-10-26":"Day3","2026-10-27":"Day4","2026-10-28":"Day5","2026-10-29":"Day6","2026-10-30":"Day1","2026-11-02":"Day2","2026-11-03":"Day3","2026-11-04":"Day4","2026-11-05":"Day5","2026-11-06":"Day6","2026-11-09":"Day1","2026-11-10":"Day2","2026-11-11":"Day3","2026-11-12":"E","2026-11-13":"Day4","2026-11-16":"E","2026-11-17":"Day5","2026-11-18":"Day6","2026-11-19":"Day1","2026-11-20":"S","2026-11-23":"Day2","2026-11-24":"Day3","2026-11-25":"Day4","2026-11-26":"Day5","2026-11-27":"TD","2026-11-30":"Day6","2026-12-01":"Day1","2026-12-02":"Day2","2026-12-03":"Day3","2026-12-04":"Day4","2026-12-07":"Day5","2026-12-08":"Day6","2026-12-09":"Day1","2026-12-10":"Day2","2026-12-11":"Day3","2026-12-12":"S","2026-12-14":"Day4","2026-12-15":"Day5","2026-12-16":"Day6","2026-12-17":"Day1","2026-12-18":"Day2","2026-12-21":"Day3","2026-12-22":"S","2027-01-04":"Day4","2027-01-05":"Day5","2027-01-06":"Day6","2027-01-07":"Day1","2027-01-08":"Day2","2027-01-11":"TD","2027-01-12":"S","2027-01-13":"Day3","2027-01-14":"Day4","2027-01-15":"Day5","2027-01-18":"Day6","2027-01-19":"Day1","2027-01-20":"Day2","2027-01-21":"Day3","2027-01-22":"Day4","2027-01-25":"Day5","2027-01-26":"Day6","2027-01-27":"Day1","2027-01-28":"Day2","2027-01-29":"S","2027-02-01":"Day3","2027-02-02":"Day4","2027-02-15":"Day5","2027-02-16":"Day6","2027-02-17":"Day1","2027-02-18":"Day2","2027-02-19":"S","2027-02-22":"Day3","2027-02-23":"Day4","2027-02-24":"Day5","2027-02-25":"Day6","2027-02-26":"Day1","2027-03-01":"Day2","2027-03-02":"Day3","2027-03-03":"Day4","2027-03-04":"E","2027-03-05":"E","2027-03-08":"E","2027-03-09":"E","2027-03-10":"S","2027-03-11":"S","2027-03-12":"S","2027-03-15":"Day5","2027-03-16":"Day6","2027-03-17":"Day1","2027-03-18":"Day2","2027-03-19":"Day3","2027-03-22":"Day4","2027-03-23":"Day5","2027-03-24":"Day6","2027-03-25":"Day1","2027-04-06":"TD","2027-04-07":"Day2","2027-04-08":"Day3","2027-04-09":"Day4","2027-04-12":"Day5","2027-04-13":"Day6","2027-04-14":"Day1","2027-04-15":"Day2","2027-04-16":"Day3","2027-04-19":"Day4","2027-04-20":"Day5","2027-04-21":"Day6","2027-04-22":"Day1","2027-04-23":"S","2027-04-26":"Day2","2027-04-27":"Day3","2027-04-28":"Day4","2027-04-29":"Day5","2027-04-30":"Day6","2027-05-03":"Day1","2027-05-04":"Day2","2027-05-05":"Day3","2027-05-06":"Day4","2027-05-07":"S","2027-05-08":"S","2027-05-11":"Day5","2027-05-12":"Day6","2027-05-14":"Day1","2027-05-17":"Day2","2027-05-18":"Day3","2027-05-19":"Day4","2027-05-20":"Day5","2027-05-21":"Day6","2027-05-24":"Day1","2027-05-25":"Day2","2027-05-26":"Day3","2027-05-27":"Day4","2027-05-28":"Day5","2027-05-31":"Day6","2027-06-01":"Day1","2027-06-02":"Day2","2027-06-03":"E","2027-06-04":"E","2027-06-07":"E","2027-06-08":"E","2027-06-10":"Day3","2027-06-11":"Day4","2027-06-14":"Day5","2027-06-15":"Day6","2027-06-16":"Day1","2027-06-17":"Day2","2027-06-18":"Day3","2027-06-21":"Day4","2027-06-22":"Day5","2027-06-23":"Day6","2027-06-24":"Day1","2027-06-25":"S","2027-06-28":"Day2","2027-06-29":"Day3","2027-06-30":"Day4","2027-07-02":"S","2027-07-05":"Day5","2027-07-06":"Day6","2027-07-07":"Day1","2027-07-08":"S","2027-07-09":"S"},"cycleWeek":{"2026-09-04":1,"2026-09-07":1,"2026-09-08":1,"2026-09-09":1,"2026-09-10":1,"2026-09-11":1,"2026-09-15":2,"2026-09-16":2,"2026-09-17":2,"2026-09-18":2,"2026-09-21":2,"2026-09-22":2,"2026-09-23":3,"2026-09-24":3,"2026-09-25":3,"2026-09-28":3,"2026-09-29":3,"2026-09-30":3,"2026-10-02":4,"2026-10-05":4,"2026-10-06":4,"2026-10-07":4,"2026-10-08":4,"2026-10-09":4,"2026-10-12":5,"2026-10-13":5,"2026-10-14":5,"2026-10-15":5,"2026-10-20":5,"2026-10-21":5,"2026-10-22":6,"2026-10-23":6,"2026-10-26":6,"2026-10-27":6,"2026-10-28":6,"2026-10-29":6,"2026-10-30":7,"2026-11-02":7,"2026-11-03":7,"2026-11-04":7,"2026-11-05":7,"2026-11-06":7,"2026-11-09":8,"2026-11-10":8,"2026-11-11":8,"2026-11-13":8,"2026-11-17":8,"2026-11-18":8,"2026-11-19":9,"2026-11-23":9,"2026-11-24":9,"2026-11-25":9,"2026-11-26":9,"2026-11-30":9,"2026-12-01":10,"2026-12-02":10,"2026-12-03":10,"2026-12-04":10,"2026-12-07":10,"2026-12-08":10,"2026-12-09":11,"2026-12-10":11,"2026-12-11":11,"2026-12-14":11,"2026-12-15":11,"2026-12-16":11,"2026-12-17":12,"2026-12-18":12,"2026-12-21":12,"2027-01-04":12,"2027-01-05":12,"2027-01-06":12,"2027-01-07":13,"2027-01-08":13,"2027-01-13":13,"2027-01-14":13,"2027-01-15":13,"2027-01-18":13,"2027-01-19":14,"2027-01-20":14,"2027-01-21":14,"2027-01-22":14,"2027-01-25":14,"2027-01-26":14,"2027-01-27":15,"2027-01-28":15,"2027-02-01":15,"2027-02-02":15,"2027-02-15":15,"2027-02-16":15,"2027-02-17":16,"2027-02-18":16,"2027-02-22":16,"2027-02-23":16,"2027-02-24":16,"2027-02-25":16,"2027-02-26":17,"2027-03-01":17,"2027-03-02":17,"2027-03-03":17,"2027-03-15":17,"2027-03-16":17,"2027-03-17":18,"2027-03-18":18,"2027-03-19":18,"2027-03-22":18,"2027-03-23":18,"2027-03-24":18,"2027-03-25":19,"2027-04-07":19,"2027-04-08":19,"2027-04-09":19,"2027-04-12":19,"2027-04-13":19,"2027-04-14":20,"2027-04-15":20,"2027-04-16":20,"2027-04-19":20,"2027-04-20":20,"2027-04-21":20,"2027-04-22":21,"2027-04-26":21,"2027-04-27":21,"2027-04-28":21,"2027-04-29":21,"2027-04-30":21,"2027-05-03":22,"2027-05-04":22,"2027-05-05":22,"2027-05-06":22,"2027-05-11":22,"2027-05-12":22,"2027-05-14":23,"2027-05-17":23,"2027-05-18":23,"2027-05-19":23,"2027-05-20":23,"2027-05-21":23,"2027-05-24":24,"2027-05-25":24,"2027-05-26":24,"2027-05-27":24,"2027-05-28":24,"2027-05-31":24,"2027-06-01":25,"2027-06-02":25,"2027-06-10":25,"2027-06-11":25,"2027-06-14":25,"2027-06-15":25,"2027-06-16":26,"2027-06-17":26,"2027-06-18":26,"2027-06-21":26,"2027-06-22":26,"2027-06-23":26,"2027-06-24":27,"2027-06-28":27,"2027-06-29":27,"2027-06-30":27,"2027-07-05":27,"2027-07-06":27,"2027-07-07":28},"specialDays":{"2026-09-01":{"code":"DAY S","category":"特別活動日","event":"開學日；開學週（半天上課）"},"2026-09-02":{"code":"DAY S","category":"特別活動日","event":"開學週（半天上課）"},"2026-09-03":{"code":"DAY S","category":"特別活動日","event":"開學週（半天上課）"},"2026-10-16":{"code":"DAY S","category":"特別活動日","event":"旅行日"},"2026-11-12":{"code":"DAY E","category":"考試日","event":"小一模擬評估、小二至小五考試；小六考試"},"2026-11-16":{"code":"DAY E","category":"考試日","event":"小一模擬評估、小二至小五考試；小六考試"},"2026-11-20":{"code":"DAY S","category":"特別活動日","event":"STEAM Day；同根同心（P.6，20–21/11）"},"2026-11-27":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2026-12-12":{"code":"DAY S","category":"特別活動日","event":"開放日；姊妹學校交流（P.5）"},"2026-12-22":{"code":"DAY S","category":"特別活動日","event":"慶祝聖誕"},"2027-01-11":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2027-01-12":{"code":"DAY S","category":"特別活動日","event":"特別活動日"},"2027-01-29":{"code":"DAY S","category":"特別活動日","event":"中華文化日（半天上課）"},"2027-02-19":{"code":"DAY S","category":"特別活動日","event":"校運會"},"2027-03-04":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-05":{"code":"DAY E","category":"考試日","event":"小一至小六考試；全港小學田徑比賽"},"2027-03-08":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-09":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-03-10":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）；姊妹學校交流（P.4）"},"2027-03-11":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）"},"2027-03-12":{"code":"DAY S","category":"特別活動日","event":"專題研習（P.1–5）、教育營（P.6）；教區聯校運動會"},"2027-04-06":{"code":"DAY TD","category":"教師專業發展日","event":"教師專業發展日【學生假期】"},"2027-04-23":{"code":"DAY S","category":"特別活動日","event":"世界閱讀日"},"2027-05-07":{"code":"DAY S","category":"特別活動日","event":"彩排日（半天上課）"},"2027-05-08":{"code":"DAY S","category":"特別活動日","event":"學藝展才華"},"2027-06-03":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-04":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-07":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-08":{"code":"DAY E","category":"考試日","event":"小一至小六考試"},"2027-06-25":{"code":"DAY S","category":"特別活動日","event":"師生朝聖日"},"2027-07-02":{"code":"DAY S","category":"特別活動日","event":"小六畢業典禮"},"2027-07-08":{"code":"DAY S","category":"特別活動日","event":"結業禮"},"2027-07-09":{"code":"DAY S","category":"特別活動日","event":"校本活動日"}},"specialLabels":{"S":"特別活動日","E":"考試日","TD":"教師專業發展日"},"teachers":[{"id":"楠","name":"陳若楠主任","sheet":"Teacher - 楠","earlyExercise":"早操","assemblyMain":{"Mon":"早會及早禱","Tue":"早會及早禱","Wed":"早會及早禱","Thu":"早會及早禱","Fri":"早禱"},"assemblySub":{"Mon":"【校長分享及 學校核心價值】","Tue":"【週訓】","Wed":"【升旗禮】","Thu":"【展藝台】","Fri":"【早讀】"},"homeroom":"班主任課","periods":[{"name":"第1節","time":"08:25-09:00","byDay":{"Day1":{"subject":"中文","location":"5A","parity":null},"Day2":{"subject":"中文","location":"5A","parity":null},"Day4":{"subject":"中文","location":"5A","parity":null},"Day6":{"subject":"中文","location":"2B","parity":null}}},{"name":"第2節","time":"09:00-09:35","byDay":{"Day4":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"5A","parity":null},"Day6":{"subject":"中文","location":"2B","parity":null}}},{"name":"第3節","time":"09:35-10:10","byDay":{"Day2":{"subject":"普通話","location":"5A","parity":null},"Day4":{"subject":"中文","location":"2B","parity":null},"Day5":{"subject":"中文","location":"5A","parity":null}}},{"name":"第4節","time":"10:25-11:00","byDay":{"Day1":{"subject":"中文","location":"2B","parity":null},"Day2":{"subject":"中默","location":"2B","parity":null},"Day3":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"2B","parity":null},"Day6":{"subject":"中默","location":"5A","parity":null}}},{"name":"第5節","time":"11:00-11:35","byDay":{"Day1":{"subject":"中文","location":"2B","parity":null},"Day2":{"subject":"中默","location":"2B","parity":null},"Day3":{"subject":"中文","location":"5A","parity":null},"Day5":{"subject":"中文","location":"2B","parity":null},"Day6":{"subject":"中默","location":"5A","parity":null}}},{"name":"第6節","time":"11:50-12:25","byDay":{}},{"name":"第7節","time":"12:25-13:00","byDay":{"Day3":{"subject":"中文","location":"2B","parity":null},"Day5":{"subject":"普通話","location":"2B","parity":null}}},{"name":"第8節","time":"14:00-14:35","byDay":{"Day2":{"subject":"導修","location":"2B","parity":null},"Day4":{"subject":"導修","location":"5A","parity":null}}}],"period9":{"Tue":{"subject":"5A","location":""},"Wed":{"subject":"2B","location":""},"Thu":{"subject":"成長號","location":""},"Fri":{"subject":"樂Kids MI","location":""}}},{"id":"耀","name":"黃榮耀主任","sheet":"Teacher - 耀","earlyExercise":"早操","assemblyMain":{"Mon":"早會及早禱","Tue":"早會及早禱","Wed":"早會及早禱","Thu":"早會及早禱","Fri":"早禱"},"assemblySub":{"Mon":"【校長分享及 學校核心價值】","Tue":"【週訓】","Wed":"【升旗禮】","Thu":"【展藝台】","Fri":"【早讀】"},"homeroom":"班主任課","periods":[{"name":"第1節","time":"08:25-09:00","byDay":{"Day3":{"subject":"科學","location":"5A","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6D","parity":"odd"},"Day5":{"subject":"數學","location":"2C","parity":null},"Day6":{"subject":"數學","location":"2C","parity":null}}},{"name":"第2節","time":"09:00-09:35","byDay":{"Day3":{"subject":"科學","location":"5A","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6D","parity":"odd"},"Day5":{"subject":"數學","location":"2C","parity":null}}},{"name":"第3節","time":"09:35-10:10","byDay":{"Day2":{"subject":"數學","location":"2C","parity":null},"Day6":{"subject":"數學","location":"606室 5D","parity":null}}},{"name":"第4節","time":"10:25-11:00","byDay":{"Day2":{"subject":"科學","location":"AI Lab 5A","parity":"odd"},"Day3":{"subject":"數學","location":"2C","parity":null},"Day4":{"subject":"資訊科技","location":"AI Lab 6A","parity":"even"}}},{"name":"第5節","time":"11:00-11:35","byDay":{"Day1":{"subject":"數學","location":"2C","parity":null},"Day2":{"subject":"科學","location":"AI Lab 5A","parity":"odd"},"Day4":{"subject":"資訊科技","location":"AI Lab 6A","parity":"even"}}},{"name":"第6節","time":"11:50-12:25","byDay":{"Day1":{"subject":"數學","location":"606室 5D","parity":null},"Day4":{"subject":"數學","location":"2C","parity":null},"Day5":{"subject":"資訊科技","location":"語言室 3D","parity":null},"Day6":{"subject":"資訊科技","location":"AI Lab 5C","parity":"odd"}}},{"name":"第7節","time":"12:25-13:00","byDay":{"Day1":{"subject":"數學","location":"606室 5D","parity":null},"Day2":{"subject":"數學","location":"606室 5D","parity":null},"Day3":{"subject":"數學","location":"606室 5D","parity":null},"Day4":{"subject":"數學","location":"606室 5D","parity":null},"Day5":{"subject":"數學","location":"606室 5D","parity":null},"Day6":{"subject":"資訊科技","location":"AI Lab 5C","parity":"odd"}}},{"name":"第8節","time":"14:00-14:35","byDay":{"Day2":{"subject":"導修","location":"5A","parity":null},"Day5":{"subject":"導修","location":"5D","parity":null},"Day6":{"subject":"導修","location":"2C","parity":null}}}],"period9":{"Mon":{"subject":"5D","location":""},"Tue":{"subject":"2C","location":""},"Thu":{"subject":"成長號","location":""},"Fri":{"subject":"樂Kids MI","location":""}}}],"termStart":"2026-09-01","termEnd":"2027-07-09","weeks":[{"week":1,"firstDate":"2026-09-04","label":"04-09-2026 至 11-09-2026"},{"week":2,"firstDate":"2026-09-15","label":"15-09-2026 至 22-09-2026"},{"week":3,"firstDate":"2026-09-23","label":"23-09-2026 至 30-09-2026"},{"week":4,"firstDate":"2026-10-02","label":"02-10-2026 至 09-10-2026"},{"week":5,"firstDate":"2026-10-12","label":"12-10-2026 至 21-10-2026"},{"week":6,"firstDate":"2026-10-22","label":"22-10-2026 至 29-10-2026"},{"week":7,"firstDate":"2026-10-30","label":"30-10-2026 至 06-11-2026"},{"week":8,"firstDate":"2026-11-09","label":"09-11-2026 至 18-11-2026"},{"week":9,"firstDate":"2026-11-19","label":"19-11-2026 至 30-11-2026"},{"week":10,"firstDate":"2026-12-01","label":"01-12-2026 至 08-12-2026"},{"week":11,"firstDate":"2026-12-09","label":"09-12-2026 至 16-12-2026"},{"week":12,"firstDate":"2026-12-17","label":"17-12-2026 至 06-01-2027"},{"week":13,"firstDate":"2027-01-07","label":"07-01-2027 至 18-01-2027"},{"week":14,"firstDate":"2027-01-19","label":"19-01-2027 至 26-01-2027"},{"week":15,"firstDate":"2027-01-27","label":"27-01-2027 至 16-02-2027"},{"week":16,"firstDate":"2027-02-17","label":"17-02-2027 至 25-02-2027"},{"week":17,"firstDate":"2027-02-26","label":"26-02-2027 至 16-03-2027"},{"week":18,"firstDate":"2027-03-17","label":"17-03-2027 至 24-03-2027"},{"week":19,"firstDate":"2027-03-25","label":"25-03-2027 至 13-04-2027"},{"week":20,"firstDate":"2027-04-14","label":"14-04-2027 至 21-04-2027"},{"week":21,"firstDate":"2027-04-22","label":"22-04-2027 至 30-04-2027"},{"week":22,"firstDate":"2027-05-03","label":"03-05-2027 至 12-05-2027"},{"week":23,"firstDate":"2027-05-14","label":"14-05-2027 至 21-05-2027"},{"week":24,"firstDate":"2027-05-24","label":"24-05-2027 至 31-05-2027"},{"week":25,"firstDate":"2027-06-01","label":"01-06-2027 至 15-06-2027"},{"week":26,"firstDate":"2027-06-16","label":"16-06-2027 至 23-06-2027"},{"week":27,"firstDate":"2027-06-24","label":"24-06-2027 至 06-07-2027"},{"week":28,"firstDate":"2027-07-07","label":"07-07-2027 至 07-07-2027"}],"dutyIndex":{"陳若楠":{"Day1":[{"slot":"morningA","location":"正門"},{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day4":[{"slot":"morningB","location":"正門"},{"slot":"lunch","location":"5樓"}],"Day3":[{"slot":"recess2","location":"球場"}],"Day6":[{"slot":"recess3","location":"涼亭"}]},"楊詠文":{"Day2":[{"slot":"morningA","location":"正門"}],"Day6":[{"slot":"morningA","location":"正門"},{"slot":"lunch","location":"1C"}],"Day3":[{"slot":"morningB","location":"正門"},{"slot":"lunch","location":"1C"}],"Day1":[{"slot":"recess3","location":"球場"}]},"莊榮昌":{"Day3":[{"slot":"morningA","location":"正門"},{"slot":"recess1","location":"全校巡查點名"}],"Day4":[{"slot":"morningA","location":"正門"}],"Day2":[{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"recess2","location":"全校巡查點名"}],"Day1":[{"slot":"recess1","location":"全校巡查點名"}],"Day5":[{"slot":"recess3","location":"內廣場"}],"Day6":[{"slot":"recess3","location":"內外廣場巡查點名"},{"slot":"lunch","location":"3樓"}]},"陳志紅":{"Day5":[{"slot":"morningA","location":"正門"},{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day2":[{"slot":"recess2","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"球場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day4":[{"slot":"lunch","location":"4樓"}]},"鄭凱迎":{"Day1":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"內廣場"}],"Day4":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"3樓"}],"Day5":[{"slot":"recess1","location":"球場"},{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"recess1","location":"2樓大堂及2梯口"}]},"林衍婷":{"Day2":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess1","location":"球場"},{"slot":"recess3","location":"5樓"}],"Day4":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess1","location":"4樓"},{"slot":"lunch","location":"1D"}],"Day3":[{"slot":"recess3","location":"1樓"}]},"老家倩":{"Day3":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"4樓"}],"Day1":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"}],"Day2":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess1","location":"6樓"}],"Day6":[{"slot":"recess3","location":"球場"}],"Day4":[{"slot":"lunch","location":"1C"}]},"陳寶如":{"Day4":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"2樓"}],"Day3":[{"slot":"recess1","location":"球場"},{"slot":"recess2","location":"1樓"}],"Day6":[{"slot":"recess1","location":"4樓"}],"Day1":[{"slot":"recess3","location":"1樓"}],"Day5":[{"slot":"lunch","location":"1C"}]},"楊美貞":{"Day5":[{"slot":"morningA","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"球場"}],"Day3":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess1","location":"涼亭+樂天長廊"}],"Day6":[{"slot":"recess1","location":"5樓"}],"Day1":[{"slot":"recess3","location":"2樓"}],"Day2":[{"slot":"lunch","location":"1A"}]},"劉泳炘":{"Day6":[{"slot":"morningA","location":"G02（雨天：1樓）"}],"Day5":[{"slot":"morningA","location":"涼亭（雨天：6樓）"},{"slot":"lunch","location":"1D"}],"Day2":[{"slot":"recess1","location":"4樓"},{"slot":"lunch","location":"4樓"}],"Day1":[{"slot":"recess2","location":"球場"}],"Day3":[{"slot":"lunch","location":"6樓"}]},"許碧玉":{"Day1":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess2","location":"1樓"}],"Day5":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"}],"Day6":[{"slot":"recess2","location":"3樓"},{"slot":"lunch","location":"1A"}],"Day2":[{"slot":"recess3","location":"1樓"}],"Day4":[{"slot":"recess3","location":"6樓"}]},"劉敏聰":{"Day2":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"內廣場"}],"Day1":[{"slot":"morningB","location":"涼亭（雨天：6樓）"}],"Day5":[{"slot":"recess1","location":"2樓大堂及2梯口"},{"slot":"recess3","location":"1樓"}],"Day4":[{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day6":[{"slot":"lunch","location":"5樓"}]},"黃秀玲":{"Day3":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"lunch","location":"5樓"}],"Day1":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"3樓"}],"Day4":[{"slot":"recess1","location":"6樓"}],"Day5":[{"slot":"recess2","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"3樓"}]},"陳雋彥":{"Day4":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess2","location":"球場"}],"Day1":[{"slot":"morningA","location":"涼亭（雨天：6樓）"}],"Day5":[{"slot":"recess2","location":"1樓"},{"slot":"recess3","location":"涼亭"}],"Day3":[{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"lunch","location":"6樓"}]},"楊嘉慧":{"Day6":[{"slot":"morningA","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"球場"}],"Day5":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"}],"Day3":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"涼亭"}],"Day1":[{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day2":[{"slot":"recess3","location":"2樓"}]},"鄭惠施":{"Day1":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"涼亭"}],"Day3":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"recess1","location":"6樓"}],"Day5":[{"slot":"recess1","location":"內廣場"}],"Day2":[{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"recess3","location":"3樓"}]},"繆嘉旋":{"Day2":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess2","location":"1樓"},{"slot":"recess3","location":"涼亭"}],"Day5":[{"slot":"recess1","location":"5樓"},{"slot":"lunch","location":"5樓"}],"Day1":[{"slot":"recess2","location":"3樓"}],"Day3":[{"slot":"recess3","location":"球場"}]},"邱美華":{"Day3":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"}],"Day6":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"2樓"}],"Day2":[{"slot":"recess1","location":"內廣場"}],"Day5":[{"slot":"recess1","location":"4樓"}],"Day1":[{"slot":"recess3","location":"球場"}],"Day4":[{"slot":"recess3","location":"樂天長廊"}]},"唐文慧":{"Day4":[{"slot":"morningA","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"morningB","location":"G02（雨天：1樓）"}],"Day5":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess2","location":"3樓"},{"slot":"recess3","location":"樂天長廊"}],"Day6":[{"slot":"recess3","location":"4樓"}]},"葉佩華":{"Day1":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"recess3","location":"樂天長廊"}],"Day2":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"}],"Day3":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"lunch","location":"2樓"}],"Day6":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"}],"Day5":[{"slot":"recess3","location":"內廣場"}]},"黃少華":{"Day2":[{"slot":"morningA","location":"球場（雨天：4樓）"}],"Day1":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"}],"Day4":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"4樓"}],"Day5":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess3","location":"2樓"}],"Day6":[{"slot":"recess3","location":"內廣場"}]},"林紫茵":{"Day4":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"lunch","location":"1A"}],"Day3":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"}],"Day5":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"1B"}],"Day6":[{"slot":"recess1","location":"球場"}],"Day2":[{"slot":"lunch","location":"1D"}]},"馮宝恩":{"Day5":[{"slot":"morningA","location":"球場（雨天：4樓）"}],"Day4":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"3樓"}],"Day1":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess2","location":"內廣場"}],"Day2":[{"slot":"recess3","location":"樂天長廊"}],"Day3":[{"slot":"lunch","location":"3樓"}]},"陳憲樺":{"Day6":[{"slot":"morningA","location":"球場（雨天：4樓）"},{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"morningA","location":"涼亭（雨天：6樓）"}],"Day4":[{"slot":"morningB","location":"球場（雨天：4樓）"}],"Day3":[{"slot":"recess1","location":"5樓"},{"slot":"recess3","location":"球場"}],"Day1":[{"slot":"recess3","location":"球場"}]},"張詠希":{"Day2":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"},{"slot":"lunch","location":"1C"}],"Day5":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"},{"slot":"recess2","location":"2樓"},{"slot":"lunch","location":"2樓"}],"Day1":[{"slot":"recess1","location":"內廣場"}],"Day4":[{"slot":"recess3","location":"5樓"}]},"陳梓彤":{"Day5":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"}],"Day6":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess2","location":"內廣場"}],"Day4":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"recess3","location":"3樓"}],"Day2":[{"slot":"recess3","location":"6樓"}]},"李潔欣":{"Day6":[{"slot":"morningA","location":"樂天長廊（雨天：5樓）"},{"slot":"recess3","location":"內廣場"}],"Day2":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess3","location":"內廣場"}],"Day3":[{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day4":[{"slot":"recess2","location":"1樓"},{"slot":"lunch","location":"1B"}]},"劉秋婷":{"Day3":[{"slot":"morningA","location":"涼亭（雨天：6樓）"},{"slot":"lunch","location":"1D"}],"Day6":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"5樓"}],"Day5":[{"slot":"morningB","location":"涼亭（雨天：6樓）"},{"slot":"recess2","location":"球場"}],"Day1":[{"slot":"recess3","location":"2樓"}]},"彭富鴻":{"Day4":[{"slot":"morningA","location":"涼亭（雨天：6樓）"}],"Day1":[{"slot":"morningB","location":"球場（雨天：4樓）"}],"Day6":[{"slot":"morningB","location":"球場（雨天：4樓）"},{"slot":"recess2","location":"球場"}],"Day2":[{"slot":"recess3","location":"球場"}],"Day3":[{"slot":"recess3","location":"2樓"}],"Day5":[{"slot":"recess3","location":"2樓"}]},"謝利":{"Day6":[{"slot":"morningA","location":"涼亭（雨天：6樓）"},{"slot":"recess3","location":"內廣場"}],"Day2":[{"slot":"morningB","location":"涼亭（雨天：6樓）"}],"Day1":[{"slot":"recess1","location":"球場"}],"Day4":[{"slot":"recess1","location":"球場"}],"Day3":[{"slot":"recess3","location":"內廣場"}],"Day5":[{"slot":"lunch","location":"3樓"}]},"周曉勤":{"Day1":[{"slot":"morningB","location":"正門"},{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day2":[{"slot":"recess2","location":"內廣場"}],"Day4":[{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}],"Day5":[{"slot":"recess3","location":"1樓"}],"Day6":[{"slot":"recess3","location":"6樓"}]},"梁婉儀":{"Day2":[{"slot":"morningB","location":"正門"}],"Day6":[{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"recess2","location":"全校巡查點名"}],"Day3":[{"slot":"recess2","location":"全校巡查點名"},{"slot":"recess3","location":"2樓"}],"Day5":[{"slot":"recess3","location":"3樓"}],"Day4":[{"slot":"lunch","location":"2樓"}]},"葉盈":{"Day5":[{"slot":"morningB","location":"正門"}],"Day2":[{"slot":"recess2","location":"3樓"},{"slot":"recess3","location":"4樓"}],"Day4":[{"slot":"recess2","location":"內廣場"}],"Day3":[{"slot":"lunch","location":"1A"}],"Day6":[{"slot":"lunch","location":"1B"}]},"黃嘉瑜":{"Day6":[{"slot":"morningB","location":"正門"}],"Day1":[{"slot":"recess1","location":"5樓"}],"Day5":[{"slot":"recess1","location":"全校巡查點名"}],"Day2":[{"slot":"recess2","location":"球場"}],"Day4":[{"slot":"recess2","location":"全校巡查點名"},{"slot":"recess3","location":"涼亭"}],"Day3":[{"slot":"recess3","location":"內廣場"},{"slot":"recess3","location":"內外廣場巡查點名"}]},"姚森森":{"Day1":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"recess3","location":"3樓"}],"Day3":[{"slot":"morningB","location":"涼亭（雨天：6樓）"}],"Day6":[{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day2":[{"slot":"recess2","location":"2樓"},{"slot":"lunch","location":"2樓"}],"Day5":[{"slot":"lunch","location":"1A"}]},"施晉裕":{"Day2":[{"slot":"morningB","location":"G02（雨天：1樓）"},{"slot":"lunch","location":"3樓"}],"Day1":[{"slot":"recess1","location":"涼亭+樂天長廊"}],"Day4":[{"slot":"recess1","location":"內廣場"},{"slot":"recess3","location":"球場"}],"Day6":[{"slot":"recess1","location":"6樓"}],"Day3":[{"slot":"recess3","location":"內廣場"}]},"王新燕":{"Day3":[{"slot":"morningB","location":"內廣場1(前)（雨天：2樓）"},{"slot":"recess1","location":"4樓"},{"slot":"recess3","location":"3樓"}],"Day5":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"lunch","location":"4樓"}],"Day6":[{"slot":"recess1","location":"內廣場"}],"Day1":[{"slot":"recess3","location":"1樓"}]},"梁恩奇":{"Day6":[{"slot":"morningB","location":"內廣場2(後)（雨天：3樓）"},{"slot":"recess2","location":"1樓"},{"slot":"lunch","location":"1D"}],"Day3":[{"slot":"recess1","location":"內廣場"}],"Day4":[{"slot":"recess1","location":"2樓大堂及2梯口"}],"Day5":[{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"recess3","location":"內廣場"}]},"余嘉希":{"Day2":[{"slot":"morningB","location":"樂天長廊（雨天：5樓）"}],"Day3":[{"slot":"recess2","location":"2樓"},{"slot":"recess3","location":"1樓"}],"Day4":[{"slot":"recess2","location":"3樓"}],"Day5":[{"slot":"recess2","location":"內廣場"}],"Day1":[{"slot":"recess3","location":"內廣場"}],"Day6":[{"slot":"lunch","location":"4樓"}]},"李燕麗":{"Day4":[{"slot":"morningB","location":"涼亭（雨天：6樓）"},{"slot":"recess3","location":"1樓"}],"Day6":[{"slot":"morningB","location":"涼亭（雨天：6樓）"},{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day3":[{"slot":"recess2","location":"3樓"},{"slot":"recess3","location":"樂天長廊"}],"Day2":[{"slot":"lunch","location":"1B"}]},"何嘉欣":{"Day4":[{"slot":"recess1","location":"涼亭+樂天長廊"},{"slot":"recess3","location":"球場"}],"Day2":[{"slot":"recess1","location":"5樓"},{"slot":"recess3","location":"3樓"}],"Day1":[{"slot":"recess2","location":"2樓"}],"Day6":[{"slot":"recess2","location":"2樓"},{"slot":"lunch","location":"2樓"}]},"黃榮耀":{"Day1":[{"slot":"recess1","location":"4樓"},{"slot":"recess3","location":"銅管樂"}],"Day5":[{"slot":"recess1","location":"6樓"}],"Day3":[{"slot":"recess2","location":"內廣場"},{"slot":"lunch","location":"1B"}],"Day6":[{"slot":"recess3","location":"樂天長廊"}],"Day4":[{"slot":"recess3","location":"銅管樂"}],"Day2":[{"slot":"lunch","location":"5樓"}]},"彭少婷":{"Day4":[{"slot":"recess1","location":"5樓"},{"slot":"lunch","location":"6樓"}],"Day1":[{"slot":"recess1","location":"6樓"},{"slot":"recess2","location":"全校巡查點名"}],"Day6":[{"slot":"recess1","location":"全校巡查點名"}],"Day2":[{"slot":"lunch","location":"6樓"}],"Day5":[{"slot":"lunch","location":"6樓"}]},"甄昫盈":{"Day1":[{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"},{"slot":"recess3","location":"圖書館"}],"Day2":[{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"},{"slot":"recess3","location":"圖書館"}],"Day3":[{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"},{"slot":"recess3","location":"圖書館"}],"Day4":[{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"},{"slot":"recess3","location":"圖書館"}],"Day5":[{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"},{"slot":"recess3","location":"圖書館"}],"Day6":[{"slot":"recess1","location":"圖書館"},{"slot":"recess2","location":"圖書館"},{"slot":"recess3","location":"圖書館"}]},"楊宇進":{"Day2":[{"slot":"recess1","location":"全校巡查點名"}],"Day4":[{"slot":"recess1","location":"全校巡查點名"},{"slot":"recess2","location":"2樓"},{"slot":"recess3","location":"球場"}],"Day3":[{"slot":"recess2","location":"涼亭+樂天長廊"}],"Day5":[{"slot":"recess2","location":"全校巡查點名"}],"Day6":[{"slot":"recess3","location":"1樓"}]}},"slotLabels":{"morningA":"課前值日 (7:30-7:45)","morningB":"課前值日 (7:45-8:00)","recess1":"小息一值日","recess2":"小息二值日","recess3":"小息三值日","lunch":"午膳值日"}};
 </script>
 <script>
 // ====== Timetable App Logic ======
@@ -716,7 +790,8 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     date: new Date(),
     view: (window.matchMedia('(max-width: 768px)').matches) ? 'day' : 'week',
     teacherIdx: DEFAULT_TEACHER_IDX,
-    compareIdx: null,
+    freeCompareIdx: null, // 共同空堂比較 (highlights slots where both are free)
+    dualIdx: null,        // 同時顯示 (shows both teachers' actual content stacked)
     calOpen: false,
     calTab: 'date',
     calMonthCursor: new Date()
@@ -767,7 +842,8 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
 
   // ---------- rendering ----------
   function currentTeacher(){ return TEACHERS[state.teacherIdx]; }
-  function compareTeacher(){ return (state.compareIdx===null) ? null : TEACHERS[state.compareIdx]; }
+  function freeCompareTeacher(){ return (state.freeCompareIdx===null) ? null : TEACHERS[state.freeCompareIdx]; }
+  function dualTeacher(){ return (state.dualIdx===null) ? null : TEACHERS[state.dualIdx]; }
 
   function populateTeacherSelect(){
     const sel = document.getElementById('teacherSelect');
@@ -781,15 +857,17 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     sel.value = state.teacherIdx;
     sel.addEventListener('change', () => {
       state.teacherIdx = Number(sel.value);
-      if(state.compareIdx === state.teacherIdx) state.compareIdx = null;
-      populateCompareSelect();
+      if(state.freeCompareIdx === state.teacherIdx) state.freeCompareIdx = null;
+      if(state.dualIdx === state.teacherIdx) state.dualIdx = null;
+      populateFreeCompareSelect();
+      populateDualSelect();
       renderAll();
     });
   }
 
-  function populateCompareSelect(){
-    const sel = document.getElementById('compareSelect');
-    const prev = state.compareIdx;
+  function populateOtherTeacherSelect(selectId, getIdx, setIdx, onPicked){
+    const sel = document.getElementById(selectId);
+    const prev = getIdx();
     sel.innerHTML = '<option value="">無</option>';
     TEACHERS.forEach((t, i) => {
       if(i === state.teacherIdx) return;
@@ -799,7 +877,14 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
       sel.appendChild(opt);
     });
     sel.value = (prev===null) ? '' : String(prev);
-    if(sel.value === '') state.compareIdx = null;
+    if(sel.value === '') setIdx(null);
+  }
+
+  function populateFreeCompareSelect(){
+    populateOtherTeacherSelect('freeCompareSelect', () => state.freeCompareIdx, (v) => { state.freeCompareIdx = v; });
+  }
+  function populateDualSelect(){
+    populateOtherTeacherSelect('dualSelect', () => state.dualIdx, (v) => { state.dualIdx = v; });
   }
 
   function renderTitle(){
@@ -834,50 +919,98 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
   }
 
   // Pure duty-slot cell (dutyA / dutyB rows): duty-or-blank, day-indexed.
-  // cmpTeacher (optional): if given, and neither teacher has duty here, mark as common-free.
-  function dutyOnlyCellHtml(teacher, dutySlot, date, cmpTeacher){
+  // freeTeacher (optional): highlight when neither has duty (共同空堂 only).
+  // dTeacher (optional): show both teachers' duty stacked (同時顯示 only).
+  function dutyOnlyCellHtml(teacher, dutySlot, date, freeTeacher, dTeacher){
     const key = toKey(date);
     const wIdx = weekdayIdx(date);
     const info = dayInfo(key);
     if(!wIdx || info.type !== 'schoolday') return '<td class="cell empty"></td>';
     const d = getDuty(teacher, info.day, dutySlot);
-    if(d){
-      return '<td class="cell duty-cell"><span class="duty-tag">值日</span><span class="duty-loc">' + escapeHtml(d.location) + '</span></td>';
+    if(dTeacher){
+      const dD = getDuty(dTeacher, info.day, dutySlot);
+      return '<td class="cell dual">' + dutyHalfHtml(d, teacher.id) + dutyHalfHtml(dD, dTeacher.id) + '</td>';
     }
-    if(cmpTeacher){
-      const cmpD = getDuty(cmpTeacher, info.day, dutySlot);
-      if(!cmpD){
+    if(freeTeacher){
+      const fD = getDuty(freeTeacher, info.day, dutySlot);
+      if(!d && !fD){
         return '<td class="cell empty common-free"><span class="free-pill">共同空堂</span></td>';
       }
+    }
+    if(d){
+      return '<td class="cell duty-cell"><span class="duty-tag">值日</span><span class="duty-loc">' + escapeHtml(d.location) + '</span></td>';
     }
     return '<td class="cell empty"></td>';
   }
 
-  // Break/fixed cell that shows duty when assigned, else its generic label
-  // (or a common-free pill when neither teacher has duty there).
-  function breakCellHtml(teacher, rowDef, date, cmpTeacher){
+  // Break/fixed cell that shows duty when assigned, else its generic label.
+  // freeTeacher (optional): 共同空堂 highlight only. dTeacher (optional): 同時顯示 stacked view.
+  function breakCellHtml(teacher, rowDef, date, freeTeacher, dTeacher){
     const key = toKey(date);
     const wIdx = weekdayIdx(date);
     const info = dayInfo(key);
     if(!wIdx || info.type !== 'schoolday') return '<td class="cell empty"></td>';
     const d = getDuty(teacher, info.day, rowDef.dutySlot);
-    if(d){
-      return '<td class="cell duty-cell"><span class="duty-tag">值日</span><span class="duty-loc">' + escapeHtml(d.location) + '</span></td>';
+    if(dTeacher){
+      const dD = getDuty(dTeacher, info.day, rowDef.dutySlot);
+      return '<td class="cell dual">' + dutyHalfHtml(d, teacher.id, rowDef.label) + dutyHalfHtml(dD, dTeacher.id, rowDef.label) + '</td>';
     }
-    if(cmpTeacher){
-      const cmpD = getDuty(cmpTeacher, info.day, rowDef.dutySlot);
-      if(!cmpD){
+    if(freeTeacher){
+      const fD = getDuty(freeTeacher, info.day, rowDef.dutySlot);
+      if(!d && !fD){
         return '<td class="cell empty common-free"><span class="free-pill">共同空堂</span></td>';
       }
+    }
+    if(d){
+      return '<td class="cell duty-cell"><span class="duty-tag">值日</span><span class="duty-loc">' + escapeHtml(d.location) + '</span></td>';
     }
     return '<td class="cell merged">' + escapeHtml(rowDef.label) + '</td>';
   }
 
-  // Regular lesson-period cell (opts: {commonFree})
+  // One row of a dual duty cell: either a duty badge+location, or the
+  // fallback label / dash when that teacher has nothing there.
+  function dutyHalfHtml(dutyEntry, tag, fallbackLabel){
+    if(dutyEntry){
+      return '<div class="dual-row duty"><span class="dual-tag">' + escapeHtml(tag) + '</span>' +
+        '<span class="dual-content"><span class="duty-tag">值日</span><span class="duty-loc">' + escapeHtml(dutyEntry.location) + '</span></span></div>';
+    }
+    const text = fallbackLabel ? escapeHtml(fallbackLabel) : '—';
+    return '<div class="dual-row empty"><span class="dual-tag">' + escapeHtml(tag) + '</span><span class="dual-content">' + text + '</span></div>';
+  }
+
+  // One row of a dual lesson cell: subject+class chip, or a dash when empty.
+  function lessonHalfHtml(content, tag){
+    if(!content || content.state !== 'filled'){
+      return '<div class="dual-row empty"><span class="dual-tag">' + escapeHtml(tag) + '</span><span class="dual-content">—</span></div>';
+    }
+    let inner = '<span class="subj">' + escapeHtml(content.main) + '</span>';
+    let style = '';
+    if(content.sub){
+      const parsed = splitLocation(content.sub);
+      inner += '<span class="dloc-wrap">';
+      if(parsed.room) inner += '<span class="room">' + escapeHtml(parsed.room) + '</span>';
+      if(parsed.code){
+        const bg = comboColor(parsed.code, content.main);
+        style = ' style="background:' + bg + '"';
+        inner += '<span class="class-chip">' + parsed.code + '</span>';
+      }
+      inner += '</span>';
+    }
+    return '<div class="dual-row"' + style + '><span class="dual-tag">' + escapeHtml(tag) + '</span><span class="dual-content">' + inner + '</span></div>';
+  }
+
+  // Regular lesson-period cell.
+  // opts: {commonFree} for 共同空堂 mode, or {dual:{tag1,tag2,cmpContent}} for 同時顯示 mode.
   function cellHtml(content, opts){
     opts = opts || {};
     if(content.state === 'unset' || content.state === 'special'){
       return '<td class="cell empty"></td>';
+    }
+    if(opts.dual){
+      return '<td class="cell dual">' +
+        lessonHalfHtml(content, opts.dual.tag1) +
+        lessonHalfHtml(opts.dual.cmpContent, opts.dual.tag2) +
+        '</td>';
     }
     if(content.state === 'empty'){
       if(opts.commonFree){
@@ -904,7 +1037,8 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
   function renderWeek(){
     const table = document.getElementById('ttTable');
     const teacher = currentTeacher();
-    const cmpTeacher = compareTeacher();
+    const freeTeacher = freeCompareTeacher();
+    const dTeacher = dualTeacher();
     const mon = startOfWeek(state.date);
     const days = [1,2,3,4,5].map(i => addDays(mon, i-1));
     const today = new Date(); today.setHours(0,0,0,0);
@@ -931,7 +1065,7 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
 
       if(rowDef.dutyRow){
         days.forEach(d => {
-          tbody += dutyOnlyCellHtml(teacher, rowDef.dutySlot, d, cmpTeacher);
+          tbody += dutyOnlyCellHtml(teacher, rowDef.dutySlot, d, freeTeacher, dTeacher);
         });
       } else if(rowDef.merged){
         let anySchool = days.some(d => { const t = dayInfo(toKey(d)).type; return t !== 'unset' && t !== 'special'; });
@@ -944,17 +1078,24 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
         }
       } else if(rowDef.dutySlot){
         days.forEach(d => {
-          tbody += breakCellHtml(teacher, rowDef, d, cmpTeacher);
+          tbody += breakCellHtml(teacher, rowDef, d, freeTeacher, dTeacher);
         });
       } else {
         days.forEach(d => {
           const content = getCellContent(teacher, rowDef, d);
-          let commonFree = false;
-          if(cmpTeacher && content.state === 'empty'){
-            const cmpContent = getCellContent(cmpTeacher, rowDef, d);
-            commonFree = (cmpContent.state === 'empty');
+          if(dTeacher){
+            const dContent = getCellContent(dTeacher, rowDef, d);
+            tbody += cellHtml(content, {dual: {tag1: teacher.id, tag2: dTeacher.id, cmpContent: dContent}});
+          } else if(freeTeacher){
+            let commonFree = false;
+            if(content.state === 'empty'){
+              const fContent = getCellContent(freeTeacher, rowDef, d);
+              commonFree = (fContent.state === 'empty');
+            }
+            tbody += cellHtml(content, {commonFree: commonFree});
+          } else {
+            tbody += cellHtml(content, {});
           }
-          tbody += cellHtml(content, {commonFree: commonFree});
         });
       }
       tbody += '</tr>';
@@ -969,7 +1110,8 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
   function renderDay(){
     const table = document.getElementById('ttTable');
     const teacher = currentTeacher();
-    const cmpTeacher = compareTeacher();
+    const freeTeacher = freeCompareTeacher();
+    const dTeacher = dualTeacher();
     const d = state.date;
     const key = toKey(d);
     const info = dayInfo(key);
@@ -1004,21 +1146,28 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
       tbody += '<td class="period-label">' + rowDef.label + '<span class="time">' + rowDef.time + '</span></td>';
 
       if(rowDef.dutyRow){
-        tbody += dutyOnlyCellHtml(teacher, rowDef.dutySlot, d, cmpTeacher);
+        tbody += dutyOnlyCellHtml(teacher, rowDef.dutySlot, d, freeTeacher, dTeacher);
       } else if(rowDef.merged){
         const content = getCellContent(teacher, rowDef, d);
         const text = (content.state === 'filled') ? content.main : rowDef.label;
         tbody += '<td class="cell merged">' + escapeHtml(text) + '</td>';
       } else if(rowDef.dutySlot){
-        tbody += breakCellHtml(teacher, rowDef, d, cmpTeacher);
+        tbody += breakCellHtml(teacher, rowDef, d, freeTeacher, dTeacher);
       } else {
         const content = getCellContent(teacher, rowDef, d);
-        let commonFree = false;
-        if(cmpTeacher && content.state === 'empty'){
-          const cmpContent = getCellContent(cmpTeacher, rowDef, d);
-          commonFree = (cmpContent.state === 'empty');
+        if(dTeacher){
+          const dContent = getCellContent(dTeacher, rowDef, d);
+          tbody += cellHtml(content, {dual: {tag1: teacher.id, tag2: dTeacher.id, cmpContent: dContent}});
+        } else if(freeTeacher){
+          let commonFree = false;
+          if(content.state === 'empty'){
+            const fContent = getCellContent(freeTeacher, rowDef, d);
+            commonFree = (fContent.state === 'empty');
+          }
+          tbody += cellHtml(content, {commonFree: commonFree});
+        } else {
+          tbody += cellHtml(content, {});
         }
-        tbody += cellHtml(content, {commonFree: commonFree});
       }
       tbody += '</tr>';
     });
@@ -1036,9 +1185,21 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     document.body.classList.toggle('day-view', state.view === 'day');
   }
 
+  function renderDualLegend(){
+    const host = document.getElementById('dualLegend');
+    const cmp = dualTeacher();
+    if(!cmp){ host.style.display = 'none'; host.innerHTML = ''; return; }
+    const teacher = currentTeacher();
+    host.style.display = 'flex';
+    host.innerHTML =
+      '<span class="item"><span class="tag">' + escapeHtml(teacher.id) + '</span>' + escapeHtml(teacher.name) + '</span>' +
+      '<span class="item"><span class="tag">' + escapeHtml(cmp.id) + '</span>' + escapeHtml(cmp.name) + '</span>';
+  }
+
   function renderAll(){
     renderTitle();
     renderViewToggle();
+    renderDualLegend();
     renderGrid();
     if(state.calOpen) renderCalendarPopover();
   }
@@ -1148,7 +1309,8 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
   // ---------- init ----------
   function init(){
     populateTeacherSelect();
-    populateCompareSelect();
+    populateFreeCompareSelect();
+    populateDualSelect();
     renderAll();
 
     document.getElementById('prevBtn').addEventListener('click', goPrev);
@@ -1157,8 +1319,22 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     document.getElementById('viewWeekBtn').addEventListener('click', () => setView('week'));
     document.getElementById('viewDayBtn').addEventListener('click', () => setView('day'));
 
-    document.getElementById('compareSelect').addEventListener('change', (e) => {
-      state.compareIdx = e.target.value === '' ? null : Number(e.target.value);
+    // 共同空堂比較 and 同時顯示 are two independent features; picking one
+    // clears the other so the grid only ever shows one comparison mode.
+    document.getElementById('freeCompareSelect').addEventListener('change', (e) => {
+      state.freeCompareIdx = e.target.value === '' ? null : Number(e.target.value);
+      if(state.freeCompareIdx !== null){
+        state.dualIdx = null;
+        document.getElementById('dualSelect').value = '';
+      }
+      renderAll();
+    });
+    document.getElementById('dualSelect').addEventListener('change', (e) => {
+      state.dualIdx = e.target.value === '' ? null : Number(e.target.value);
+      if(state.dualIdx !== null){
+        state.freeCompareIdx = null;
+        document.getElementById('freeCompareSelect').value = '';
+      }
       renderAll();
     });
 
