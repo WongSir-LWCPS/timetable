@@ -758,6 +758,12 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
           if(code) set.add(code + '::' + e.subject);
         });
       });
+      // Period 9 entries often ARE bare class codes (e.g. "5A") with no
+      // separate subject/location, so give them their own colour bucket.
+      Object.values(t.period9 || {}).forEach(e => {
+        const parsed = splitLocation(e.subject || '');
+        if(parsed.code && !parsed.room) set.add(parsed.code + '::__P9__');
+      });
     });
     const combos = Array.from(set).sort();
     const map = {};
@@ -779,6 +785,24 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     for(let i=0;i<key.length;i++){ hash = key.charCodeAt(i) + ((hash<<5)-hash); hash |= 0; }
     const hue = Math.abs(hash) % 360;
     return 'hsl(' + hue + ',72%,80%)';
+  }
+
+  // Works out the fill colour (and optional room text) for a filled lesson
+  // cell. Normally the class code lives in content.sub (e.g. period 1-8's
+  // location "606室 5D"). Period 9 has no separate location field though —
+  // its value is sometimes just a bare class code (e.g. "5A") — so fall
+  // back to scanning content.main for that case.
+  function lessonColorInfo(content){
+    if(content.sub){
+      const parsed = splitLocation(content.sub);
+      if(parsed.code) return {bg: comboColor(parsed.code, content.main), room: parsed.room, code: parsed.code};
+      return {bg: null, room: parsed.room, code: null};
+    }
+    const parsedMain = splitLocation(content.main);
+    if(parsedMain.code && !parsedMain.room){
+      return {bg: comboColor(parsedMain.code, '__P9__'), room: '', code: parsedMain.code, codeInMain: true};
+    }
+    return null;
   }
 
   // ---------- state ----------
@@ -985,16 +1009,15 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     }
     let inner = '<span class="subj">' + escapeHtml(content.main) + '</span>';
     let style = '';
-    if(content.sub){
-      const parsed = splitLocation(content.sub);
-      inner += '<span class="dloc-wrap">';
-      if(parsed.room) inner += '<span class="room">' + escapeHtml(parsed.room) + '</span>';
-      if(parsed.code){
-        const bg = comboColor(parsed.code, content.main);
-        style = ' style="background:' + bg + '"';
-        inner += '<span class="class-chip">' + parsed.code + '</span>';
+    const info = lessonColorInfo(content);
+    if(info){
+      if(info.bg) style = ' style="background:' + info.bg + '"';
+      if(info.room || info.code){
+        inner += '<span class="dloc-wrap">';
+        if(info.room) inner += '<span class="room">' + escapeHtml(info.room) + '</span>';
+        if(info.code && !info.codeInMain) inner += '<span class="class-chip">' + info.code + '</span>';
+        inner += '</span>';
       }
-      inner += '</span>';
     }
     return '<div class="dual-row"' + style + '><span class="dual-tag">' + escapeHtml(tag) + '</span><span class="dual-content">' + inner + '</span></div>';
   }
@@ -1020,16 +1043,15 @@ const APPDATA = {"dayMap":{"2026-09-01":"S","2026-09-02":"S","2026-09-03":"S","2
     }
     let cellStyle = '';
     let html = '<span class="subj">' + escapeHtml(content.main) + '</span>';
-    if(content.sub){
-      const parsed = splitLocation(content.sub);
-      html += '<span class="loc-wrap">';
-      if(parsed.room) html += '<span class="room">' + escapeHtml(parsed.room) + '</span>';
-      if(parsed.code){
-        const bg = comboColor(parsed.code, content.main);
-        cellStyle = ' style="background:' + bg + '"';
-        html += '<span class="class-chip">' + parsed.code + '</span>';
+    const info = lessonColorInfo(content);
+    if(info){
+      if(info.bg) cellStyle = ' style="background:' + info.bg + '"';
+      if(info.room || info.code){
+        html += '<span class="loc-wrap">';
+        if(info.room) html += '<span class="room">' + escapeHtml(info.room) + '</span>';
+        if(info.code && !info.codeInMain) html += '<span class="class-chip">' + info.code + '</span>';
+        html += '</span>';
       }
-      html += '</span>';
     }
     return '<td class="cell"' + cellStyle + '>' + html + '</td>';
   }
